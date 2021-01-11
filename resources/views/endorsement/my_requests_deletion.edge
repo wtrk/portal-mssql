@@ -1,0 +1,254 @@
+@layout('layout.app')
+@section('content')
+<style>
+    .tabsLinks {
+        position: relative;
+        z-index: 100;
+    }
+
+    .tabsLinks a {
+        background: #fff;
+        display: inline-block;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 1rem 1.2rem;
+        color: #000;
+    }
+
+    .tabsLinks a.current {
+        border-bottom: 0;
+    }
+
+    .tabsContainer {
+        margin-top: -18px;
+        z-index: 10;
+    }
+
+    .accordion>.card {
+        box-shadow: none;
+    }
+    .tabsContainer{
+        background-color:#fff;
+    }
+    .tabsContainer > div:first-child{
+        border-top:1px solid rgba(0, 0, 0, 0.1);border-bottom:1px solid rgba(0, 0, 0, 0.1);border-left:1px solid rgba(0, 0, 0, 0.1);
+    }
+    .tabsContainer > div:last-child{
+        border-top:1px solid rgba(0, 0, 0, 0.1);border-bottom:1px solid rgba(0, 0, 0, 0.1);border-right:1px solid rgba(0, 0, 0, 0.1);
+    }
+    .requestsDetailsCont{
+        border-left:1px solid rgba(0, 0, 0, 0.1);
+    }
+    .requestsDetailsCont h5{
+        width:100%;
+    }
+</style>
+<div id="requestsContainer">
+    <h1 class="h3 mb-3">My Deletion Ongoing Requests</h1>
+    <div class="mb-3 tabsLinks" id="ongoingTabs">
+        <a href="javascript:openByPolicy();" class="current">By Policy</a>
+        <a href="javascript:openByWebReqId();">By Web Request Id</a>
+    </div>
+    <div class="row mb-5 tabsContainer">
+        <div class="col-12 col-lg-4" style="">
+            <div class="accordion" id="myOngoingRequests"></div>
+        </div>
+        <div class="col-12 col-lg-8 requestsDetailsCont d-flex flex-column justify-content-center">
+            <div class="my-2 mx-3" id="requestsDetails">
+                <h6 class="text-center"><em>Member requests details will appear here!</em></h6>
+            </div>
+        </div>
+    </div>
+    
+    <h1 class="h3 mb-3">My Deletion Completed Requests</h1>
+    <div class="mb-3 tabsLinks" id="completedTabs">
+        <a href="javascript:openCompletedByPolicy();" class="current">By Policy</a>
+        <a href="javascript:openCompletedByWebReqId();">By Web Request Id</a>
+    </div>
+    <div class="row mb-5 tabsContainer">
+        <div class="col-12 col-lg-4" style="">
+            <div class="accordion" id="myCompletedRequests"></div>
+        </div>
+        <div class="col-12 col-lg-8 requestsDetailsCont d-flex flex-column justify-content-center">
+            <div class="my-2 mx-3" id="completedRequestsDetails">
+                <h6 class="text-center"><em>Member requests details will appear here!</em></h6>
+            </div>
+        </div>
+    </div>
+    @if(personDbRejected.length!=0)
+    <h1 class="h3 mb-3">My Rejected Deletion Requests <span style="font-size:.8em;">(As per Insurance company)</span></h1>
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Full Name</th>
+                            <th scope="col">Company Name</th>
+                            <th scope="col">Reason</th>
+                            <th scope="col">Deleted at</th>
+                            <th scope="col" width="130"></th>
+                            <th scope="col" width="160"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @each(rejectedPerson in personDbRejected)
+                        <tr>
+                            <td>{{rejectedPerson.first_name}} {{rejectedPerson.last_name}}</td>
+                            <td>{{rejectedPerson.company_name}}</td>
+                            <td>{{rejectedPerson.reason_rejection || 'Unknown'}}</td>
+                            <td class="dateFormat">{{rejectedPerson.created_at}}</td>
+                            <td>
+                                <form action="{{ route('resubmitDeletion') }}" method="post">
+                                    <input type="hidden" name="web_req_id" value="{{rejectedPerson.web_req_id}}" />
+                                    <input type="hidden" name="Add_health_temp_id"
+                                        value="{{rejectedPerson.Add_health_temp_id}}" />
+                                    <input type="hidden" name="policy_id" value="{{rejectedPerson.policy_id}}" />
+                                    <button class="btn btn-success resubmitRejectedPerson" type="submit"><i
+                                            class="fas fa-check"></i>
+                                        Resubmit</button>
+                                </form>
+                            </td>
+                            <td><button class="btn btn-danger deleteRejectedPerson"
+                                data-policyid="{{rejectedPerson.policy_id}}"
+                                    data-webreqid="{{rejectedPerson.web_req_id}}"
+                                    data-addhealthtempid="{{rejectedPerson.Add_health_temp_id}}"><i
+                                        class="fas fa-times"></i> Delete forever</button>
+                            </td>
+                        </tr>
+                        @endeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
+</div>
+@endsection
+
+@section('javascript')
+<script type="text/javascript">
+    $(window).on('load',function(){
+        $('#showEndId').modal('show');
+    });
+    let openByPolicy = function (){
+        $.ajax({
+            url: "{{ route('deletionByPolicy') }}",
+            type: "get",
+            success: function (res) {
+                $("#ongoingTabs > a").removeClass("current")
+                $("#ongoingTabs > a:nth-Child(1)").addClass("current")
+                $("#myOngoingRequests").html(res)
+                $(".dateFormat").each(function() {
+                    var dateNewFormat=moment($(this).text()).format("DD MMM YYYY")
+                    $(this).text((dateNewFormat==="Invalid date") ? "-" : dateNewFormat)
+                });
+
+            },
+            error: function(xhr, status, error) {
+                alert('Something went wrong')
+                console.log(xhr.responseText);
+            }
+        });
+    }
+    let openByWebReqId = function (){
+        $.ajax({
+            url: "{{ route('deletionByWebReqId') }}",
+            type: "get",
+            success: function (res) {
+                $("#ongoingTabs > a").removeClass("current")
+                $("#ongoingTabs > a:nth-Child(2)").addClass("current")
+                $("#myOngoingRequests").html(res)
+                $(".dateFormat").each(function() {
+                    var dateNewFormat=moment($(this).text()).format("DD MMM YYYY")
+                    $(this).text((dateNewFormat==="Invalid date") ? "-" : dateNewFormat)
+                });
+
+            },
+            error: function(xhr, status, error) {
+                alert('Something went wrong')
+                console.log(xhr.responseText);
+            }
+        });
+    }
+    let openCompletedByPolicy = function (){
+        $.ajax({
+            url: "{{ route('completedDeletionByPolicy') }}",
+            type: "get",
+            success: function (res) {
+                $("#completedTabs > a").removeClass("current")
+                $("#completedTabs > a:nth-Child(1)").addClass("current")
+                $("#myCompletedRequests").html(res)
+                $(".dateFormat").each(function() {
+                    var dateNewFormat=moment($(this).text()).format("DD MMM YYYY")
+                    $(this).text((dateNewFormat==="Invalid date") ? "-" : dateNewFormat)
+                });
+
+            },
+            error: function(xhr, status, error) {
+                alert('Something went wrong')
+                console.log(xhr.responseText);
+            }
+        });
+    }
+    let openCompletedByWebReqId = function (){
+        $.ajax({
+            url: "{{ route('completedDeletionByWebReqId') }}",
+            type: "get",
+            success: function (res) {
+                $("#completedTabs > a").removeClass("current")
+                $("#completedTabs > a:nth-Child(2)").addClass("current")
+                $("#myCompletedRequests").html(res)
+                $(".dateFormat").each(function() {
+                    var dateNewFormat=moment($(this).text()).format("DD MMM YYYY")
+                    $(this).text((dateNewFormat==="Invalid date") ? "-" : dateNewFormat)
+                });
+
+            },
+            error: function(xhr, status, error) {
+                alert('Something went wrong')
+                console.log(xhr.responseText);
+            }
+        });
+    }
+    $(document).ready(function(){
+        openByPolicy()
+        openCompletedByPolicy()
+        $(".deleteRejectedPerson").click(function(e){
+            var dataArray=[]
+            dataArray.push({
+                web_req_id:$( this ).data( "webreqid" ),
+                Add_health_temp_id:$( this ).data( "addhealthtempid" ),
+                policy_id:$( this ).data( "policyid" ),
+                last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")
+            })
+            var parentTrToHide=$(this).parent("td").parent("tr")
+                $.ajax({
+                    url: "{{ route('deleteDeletionRejectedPerson') }}",
+                    type: "post",
+                    data:  {data:dataArray},
+                    success: function (res) {
+                        alert(res)
+                        parentTrToHide.hide()
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Something went wrong')
+                        console.log(xhr.responseText);
+                    }
+                });
+        })
+    })
+function openDetails(endorsement_id,status){
+    $.post("{{ route('myRequestsDetails') }}",
+    {
+        section: "delete",
+        endorsement_id:endorsement_id,
+        status:status
+    },
+    function(data){
+        let detailsId = (status==1) ? "#requestsDetails" : "#completedRequestsDetails";
+        $(detailsId).html(data)
+    });
+}
+</script>
+@endsection

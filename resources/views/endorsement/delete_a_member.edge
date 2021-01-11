@@ -1,0 +1,253 @@
+@layout('layout.app')
+@section('css')
+<link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
+<style>
+    .handsontable tbody th,
+    .handsontable thead th,
+    .handsontable tbody th.ht__active_highlight,
+    .handsontable thead th.ht__active_highlight {
+        background-color: #696969;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle !important;
+    }
+
+    #text-error {
+        color: #ff4c42
+    }
+
+    #step-2 {
+        overflow-y: hidden;
+    }
+
+    .step-content {
+        border-top: 20px solid #f5f9fc !important;
+    }
+
+    #step1Submit,
+    #step2Submit {
+        width: 150px !important
+    }
+
+    #smartwizard-arrows-primary .nav-tabs li a {
+        width: 155px;
+        height: 68px;
+    }
+</style>
+@endsection
+@section('content')
+<h1 class="h3 mb-3">Delete Member(s)</h1>
+
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div id="smartwizard-arrows-primary" class="wizard wizard-primary mb-4">
+            <ul>
+                <li>
+                    <a href="#arrows-primary-step-1">Step 1<br /><small>Select member(s)</small></a>
+                </li>
+                <li>
+                    <a href="#arrows-primary-step-2">Step 2<br /><small>Validate</small></a>
+                </li>
+                <li>
+                    <a href="#arrows-primary-step-3">Step 3<br /><small>Upload Documents</small></a>
+                </li>
+            </ul>
+            <div>
+                <div id="arrows-primary-step-1" class="">
+                    <div class="messagesContainer"></div>
+
+                    <div class="row mb-3 p-3">
+                        <div class="col-6" id="MASTERcontainer">
+                            <select class="selectMaster js-states form-control">
+                                <option></option>
+                                @each(master_account in master_accounts)
+                                <option value="{{master_account.master_account}}">{{master_account.master_account}}
+                                </option>
+                                @endeach
+                            </select>
+                        </div>
+
+                        <div class="col-6" id="CORcontainer">
+                            <select class="selectCOR js-states form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3 p-3">
+                        <div class="col-12" id="step-2">
+                        </div>
+                    </div>
+                    <div class="btnInSmartwizard">
+                        <div class="d-flex">
+                            <div id="text-error"></div>
+                            <button class="btn btn-primary ml-auto" id="step1Submit">Next</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="arrows-primary-step-2" class="">
+                    <div class="content-step-2 p-3"></div>
+                    <div class="btnInSmartwizard">
+                        <div class="d-flex">
+                            <div id="text-error"></div>
+                            <button class="btn btn-primary ml-auto" id="step2Submit">Next</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="arrows-primary-step-3" class="">
+                    <div class="content-step-3 p-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+@section('javascript')
+<script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+{{ script('assets/js/hot-functions') }}
+<script>
+    $(document).ready(function() {
+        //$("#step2Submit").hide();
+            var dataArray=[]
+        $("#step1Submit").on("click", function() {
+            $("tr.selected").each(function () {
+                var entryId = $(this).attr("id").slice(10);
+                dataArray.push(entryId)
+            });
+            if(dataArray.length==0){
+                    alert("You didn't select any entry")
+            }else{
+                $.ajax({
+                    url: "{{ route('deleteAMember1') }}",
+                    type: "post",
+                    data:  {cor:cor,step:2,data:dataArray},
+                    success: function (res) {
+                        $(".content-step-2").html(res)
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Something went wrong')
+                        console.log(xhr.responseText);
+                    }
+                });
+                $("#smartwizard-arrows-primary").smartWizard("next");
+            }
+        });
+        $("#step2Submit").on("click", function() {
+            var step2Data=[]
+            var valError=0
+            $("#datatables_step2 tr.selected").each(function () {
+                var entryId = $(this).attr("id");
+                var firstName = $(this).attr("data-fname");
+                var lastName = $(this).attr("data-lname");
+                var entryId = $(this).attr("id");
+                if($(this).find(".reason textarea").css("display")!="none"){
+                    if($(this).find(".reason").children("textarea").val()!=""){
+                        var reason = $(this).find(".reason").children("textarea").val();
+                    }else{
+                        valError=1
+                    }
+                }else{
+                    var reason = null
+                }
+                step2Data.push({staff_id:entryId.slice(10),reason:reason,first_name:firstName,last_name:lastName})
+            });
+            if(valError==0){
+                $.ajax({
+                    url: "{{ route('deleteAMember3') }}",
+                    type: "post",
+                    data:  {cor:cor,step:2,data:step2Data},
+                    success: function (res) {
+                        $(".content-step-3").html(res)
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Something went wrong')
+                        console.log(xhr.responseText);
+                    }
+                });
+                $("#smartwizard-arrows-primary").smartWizard("next");
+            }else{
+                alert("Please add a reason to the selected dependent(s)")
+            }
+            
+        });
+        $("#smartwizard-arrows-primary").smartWizard({
+            selected:0,
+          theme: "arrows",
+          showStepURLhash: false,
+          transitionEffect:'slide',
+          toolbarSettings: {
+            toolbarPosition: 'none', // none, top, bottom, both
+            },
+        });
+        var btnFinish = $('<button></button>').text('Finish')
+                                             .addClass('btn btn-info')
+                                             .on('click', function(){ alert('Finish Clicked'); });
+        // Initialize the showStep event
+        $("#smartwizard-arrows-primary").on("showStep", function(e, anchorObject, index, stepDirection, stepPosition) {
+            const stepIndex=index+1
+            if(stepIndex==2){
+            }else if(stepIndex==3){
+                // $.ajax({
+                //     url: "{{ route('addAMember3') }}",
+                //     type: "get",
+                //     success: function (res) {
+                //         $("#arrows-primary-step-3").html(res)
+                //     },
+                //     error: function(xhr, status, error) {
+                //         alert('Something went wrong')
+                //         console.log(xhr.responseText);
+                //     }
+                // });
+            }
+        });
+
+        $(".selectMaster").val('').change();
+        $(".selectMaster").select2({
+            placeholder: "Select MASTER Account"
+        });
+        $('.selectMaster').on('change', function (e) {
+            master_account =$(this).val();
+            $(".selectCOR option").remove()
+            $.ajax({
+                url: "{{ route('getCORFromMaster') }}",
+                type: "get",
+                data: {master_account:$(this).val()},
+                success: function (res) {
+                    $(".selectCOR").append("<option></option>")
+                    $.each(res, function( index, value ) {
+                        $(".selectCOR").append("<option value='"+value.cor +"'>"+value.cor +"</option>")
+                    });
+                },
+                error: function(xhr, status, error) {
+                    alert('Something went wrong')
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+
+        $(".selectCOR").select2({
+            placeholder: "Select Country of Residence"
+        });               
+        $('.selectCOR').on('change', function (e) {
+            $("#handsOnTableCont").css("display","block")
+            cor =$(this).val();
+                $("#MASTERcontainer").html("<strong>MASTER Account:</strong> "+master_account+"</strong>")
+                $("#CORcontainer").html("<strong>Country of Residence:</strong> "+cor+"</strong>")
+                
+                $.ajax({
+                    url: "{{ route('deleteAMember1') }}",
+                    type: "post",
+                    data:  {cor:cor,step:1,data:[]},
+                    success: function (res) {
+                        $("#step-2").html(res)
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Something went wrong')
+                        console.log(xhr.responseText);
+                    }
+                });
+                
+        })
+    })
+</script>
+@endsection

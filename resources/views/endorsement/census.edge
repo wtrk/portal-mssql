@@ -1,0 +1,88 @@
+@layout('layout.app')
+@section('content')
+<h1 class="h3 mb-3">Census</h1>
+<div class="row">
+    <div class="col-12">
+        <div class="card p-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Select your MASTER account and your country of residence</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-6" id="MASTERcontainer">
+                        <select class="selectMaster js-states form-control">
+                            <option></option>
+                            @each(master_account in master_accounts)
+                            <option value="{{master_account.master_account}}">{{master_account.master_account}}</option>
+                            @endeach
+                        </select>
+                    </div>
+
+                    <div class="col-6" id="CORcontainer">
+                        <select class="selectCOR js-states form-control">
+                            <option></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12" id="step-2">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+@section('javascript')
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script>
+    $(document).ready(function() {
+        ////////////////start////////////////STEP 1////////////////start////////////////
+        $(".selectMaster").val('').change();
+        $(".selectMaster").select2({
+            placeholder: "Select MASTER Account"
+        });
+        $('.selectMaster').on('change', function (e) {
+            master_account =$(this).val();
+            $(".selectCOR option").remove()
+            $.ajax({
+                url: "{{ route('getCORFromMaster') }}",
+                type: "get",
+                data: {master_account:$(this).val()},
+                success: function (res) {
+                    $(".selectCOR").append("<option></option>")
+                    $.each(res, function( index, value ) {
+                        $(".selectCOR").append("<option value='"+value.cor +"'>"+value.cor +"</option>")
+                    });
+                },
+                error: function(xhr, status, error) {
+                    alert('Something went wrong')
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+
+        $(".selectCOR").select2({
+            placeholder: "Select Country of Residence"
+        });               
+        $('.selectCOR').on('change', function (e) {
+            $("#handsOnTableCont").css("display","block")
+            cor =$(this).val();
+            $("#step-2").html('<div class="text-center w-100"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>')
+            $.post("{{ route('censusList') }}",
+            {
+                master_account: master_account,
+                cor: cor
+            },
+            function(data, status){
+                $(".card-header").hide()
+                $("#MASTERcontainer").html("<strong>MASTER Account:</strong> "+master_account+"</strong>")
+                $("#CORcontainer").html("<strong>Country of Residence:</strong> "+cor+"</strong>")
+                $("#step-2").html(data)
+            });
+        })
+    })
+</script>
+@endsection

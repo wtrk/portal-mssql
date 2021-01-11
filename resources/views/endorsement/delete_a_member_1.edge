@@ -1,0 +1,50 @@
+<div class="row">
+    <div class="col-12" style="overflow:auto;">
+        <table class="table table-bordered" id="datatables-multi">
+            <thead>
+                <tr>
+                    <th width="50">Delete</th>
+                    <th>Full Name (Only principals are shown in this step)</th>
+                    <th>staff id</th>
+                    <th>DOB</th>
+                    <th>Gender</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @each(principal in principalsFromUpdatedIid)
+                @if(principal.first_name)
+                <tr id="entry_row_{{principal.staff_id}}">
+                    <td></td>
+                    <td class="full_name">{{principal.first_name}} {{principal.last_name}}</td>
+                    <td>{{principal.staff_id}}</td>
+                    <td class="dateFormat">{{principal.dob}}</td>
+                    <td>{{principal.gender}}</td>
+                </tr>
+                @endif
+                @endeach
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    $(function() {
+        $(".dateFormat").each(function () {
+            var dateNewFormat=moment($(this).text(),"MMM DD YYYY hh:mm a").format("DD MMM YYYY")
+            if(dateNewFormat=="Invalid date") dateNewFormat=moment($(this).text()).format("DD MMM YYYY")
+            $(this).text((dateNewFormat==="Invalid date") ? "-" : dateNewFormat)
+        });
+        var datatablesMulti = $("#datatables-multi").DataTable({
+            columnDefs: [ {
+                orderable: false,
+                className: 'select-checkbox',
+                targets:   0
+            } ],
+            select: {
+                style: "multi",
+                selector: 'td:nth-child(1)'
+            },
+            order: [[ 1, 'asc' ]]
+        });
+    })
+</script>

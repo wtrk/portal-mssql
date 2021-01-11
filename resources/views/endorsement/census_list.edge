@@ -1,0 +1,105 @@
+
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="d-flex align-items-stretch bd-highlight" style="background:#f1f1f1;">
+            <div class="p-2 flex-fill bd-highlight">
+                <table class="table mb-0" id="datatables-reponsive">
+                    <thead>
+                        <tr>
+                            <th scope="col">Policy Id</th>
+                            <th scope="col">LOB</th>
+                            <th scope="col">Supplier</th>
+                            <th scope="col">COR</th>
+                            <th scope="col">Policy holder</th>
+                            <th scope="col">Currency</th>
+                            <th scope="col">Eff date</th>
+                            <th scope="col">Exp Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @each(policy in policiesDb)
+                        <tr>
+                            <td>{{policy.master_policy_clover_id}}</td>
+                            <td>{{policy.lob}}</td>
+                            <td>{{policy.supplier}}</td>
+                            <td>{{policy.cor}}</td>
+                            <td>{{policy.policyholder}}</td>
+                            <td>{{policy.currency}}</td>
+                            <td class="dateFormat">{{policy.effective_date}}</td>
+                            <td class="dateFormat">{{policy.effective_date}}</td>
+                        </tr>
+                        @endeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3" id="handsOnTableCont">
+    <div class="col-12" style="overflow-x:auto">
+<table id="datatables" class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Insured type</th>
+            <th>Full Name</th>
+            <th>Date of birth</th>
+            <th>Gender</th>
+            <th>Nationality</th>
+            <th>Marital Status</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            @each(policy in policiesDb)
+            <th>{{policy.master_policy_clover_id}}</th>
+            @endeach
+        </tr>
+    </thead>
+    <tbody>
+        @each(censusEntry in uidData)
+        <tr>
+            <td>{{censusEntry.insured_type}}</td>
+            <td>{{censusEntry.first_name}} {{censusEntry.second_name}} {{censusEntry.last_name}}</td>
+            <td class="dateFormat">{{censusEntry.dob}}</td>
+            <td>{{censusEntry.gender}}</td>
+            <td>{{censusEntry.nationality}}</td>
+            <td>{{censusEntry.marital_status}}</td>
+            <td>{{censusEntry.mobile}}</td>
+            <td>{{censusEntry.email}}</td>
+
+            @each(policy in policiesDb)
+            <td>
+                @each(updatedUid in updatedUidDb)
+                @if(updatedUid.master_policy_clover_id==$parent.policy.master_policy_clover_id &&
+                updatedUid.uid==$parent.$parent.censusEntry.uid)
+                {{updatedUid.cat}}
+                @endif
+                @endeach
+            </td>
+            @endeach
+        </tr>
+        @endeach
+    </tbody>
+</table>
+
+</div>
+
+</div>
+<script>
+    $(document).ready(function(){
+        $(".dateFormat").each(function () {
+            var dateNewFormat=moment($(this).text()).format("DD MMM YYYY")
+            $(this).text((dateNewFormat==="Invalid date") ? "-" : dateNewFormat)
+        });
+        $("#datatables").DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { 
+                    extend: 'excel', 
+                    text: 'Export to excel',
+                    className: 'btn-outline-primary',
+                    init: function(api, node, config) {
+                        $(node).removeClass('btn-secondary')
+                    } }
+            ]
+        });
+    })
+</script>

@@ -1,0 +1,80 @@
+<ul class="sidebar-nav">
+    <li class="sidebar-header">
+    @if(auth.user.member_type==1)
+    You are a super admin
+    @elseif(auth.user.member_type==2)
+    You are a clover employee
+    @else
+    You are a customer
+    @endif
+    </li>
+    <li class="sidebar-item">
+        <a href="/" class="sidebar-link ">
+            <i class="align-middle icon-basic-world"></i> <span class="align-middle">Dashboard</span>
+        </a>
+    </li>
+{{auth.user.member_type}}
+    @if(auth.user.member_type==1)
+    <li class="sidebar-item">
+        <a href="#administrator" data-toggle="collapse" class="sidebar-link collapsed">
+            <i class="align-middle icon-basic-case"></i> <span class="align-middle">Administrator</span>
+        </a>
+        <ul id="administrator" class="sidebar-dropdown list-unstyled collapse" data-parent="#sidebar">
+            <li class="sidebar-item"><a class="sidebar-link" href="/admin/registered">Registered Users</a>
+            </li>
+        </ul>
+    </li>
+    @endif
+
+
+    <li class="sidebar-item">
+        <a href="javascript:;" data-toggle="collapse" class="sidebar-link collapsed">
+            <i class="align-middle icon-ecommerce-sales"></i> <span class="align-middle">Special Offers</span>
+        </a>
+    </li>
+    <li class="sidebar-item">
+        <a href="#endorsement" data-toggle="collapse" class="sidebar-link collapsed">
+            <i class="align-middle icon-basic-mail-open-text"></i> <span class="align-middle">Endorse Your
+                Policies</span>
+        </a>
+        <ul id="endorsement" class="sidebar-dropdown list-unstyled collapse" data-parent="#sidebar">
+            <li class="sidebar-item"><a class="sidebar-link" href="/endorsement/myPolicies">My List of Policies</a>
+            <li class="sidebar-item"><a class="sidebar-link" href="/endorsement/myAdditionRequests">My Addition Requests</a>
+            <li class="sidebar-item"><a class="sidebar-link" href="/endorsement/myDeletionRequests">My Deletion Requests</a>
+            <li class="sidebar-item"><a class="sidebar-link" href="/endorsement/addAMember">Add Member(s)</a>
+            <li class="sidebar-item"><a class="sidebar-link" href="/endorsement/deleteAMember">Delete Member(s)</a>
+            <li class="sidebar-item"><a class="sidebar-link" href="/endorsement/census">Census</a>
+            </li>
+        </ul>
+    </li>
+    <li class="sidebar-item">
+        <a href="javascript:;" data-toggle="collapse" class="sidebar-link collapsed">
+            <i class="align-middle icon-ecommerce-banknotes"></i> <span class="align-middle">Check Your
+                Financials</span>
+        </a>
+    </li>
+    <li class="sidebar-item">
+        <a href="javascript:;" data-toggle="collapse" class="sidebar-link collapsed">
+            <i class="align-middle icon-basic-todolist-pencil"></i> <span class="align-middle">Submit/View your
+                Claims</span>
+        </a>
+    </li>
+    <li class="sidebar-item">
+        <a href="javascript:;" data-toggle="collapse" class="sidebar-link collapsed">
+            <i class="align-middle icon-basic-helm"></i> <span class="align-middle">Explore Your
+                Policies</span>
+        </a>
+    </li>
+</ul>
+<div class="sidebar-bottom d-none d-lg-block">
+    <div class="media">
+        <img class="rounded-circle mr-3" src="/assets/img/new_logo.png" alt="{{auth.user.firstname}}" width="40"
+            height="40">
+        <div class="media-body">
+            <h5 class="mb-1">{{auth.user.firstname}} {{auth.user.lastname}}</h5>
+            <div>
+                <i class="fas fa-circle text-success"></i> Online
+            </div>
+        </div>
+    </div>
+</div>

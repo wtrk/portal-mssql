@@ -1,0 +1,358 @@
+@layout('layout.app')
+@section('content')
+<div class="row">
+    <div class="col-12 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <div class="card-actions float-right">
+                    <div class="dropdown show">
+                        <a href="#" data-toggle="dropdown" data-display="static">
+                            <i class="align-middle" data-feather="more-horizontal"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </div>
+                </div>
+                <h5 class="card-title mb-0">Registered Users</h5>
+            </div>
+            <div style="padding:15px;">
+                <table id="datatables-dashboard-traffic" class="table table-striped my-0">
+                    <thead>
+                        <tr>
+                            <th>Full Name </th>
+                            <th>Phone Number </th>
+                            <th>Status </th>
+                            <th>Member Type</th>
+                            <th width="400">Linked User</th>
+                            <th width="70">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @each(user in users)
+                        <tr>
+                            <td><a href="mailto:{{ user.email }}">{{ user.firstname }} {{ user.lastname }}</a></td>
+                            <td>{{ user.phonenumber }}</td>
+                            <td>
+                                @if(user.accstatus==0)
+                                <span class="badge badge-info">Inactive</span>
+                                @elseif(user.accstatus==1)
+                                <span class="badge badge-success">Active</span>
+                                @elseif(user.accstatus==2)
+                                <span class="badge badge-secondary">Linked</span>
+                                @elseif(user.accstatus==3)
+                                <span class="badge badge-danger">Disabled</span>
+                                @endif
+                            </td>
+                            <td>   
+                                <form class="chooseMemberType" action="{{ route('chooseMemberType') }}" method="POST">
+                                    <input type="hidden" name="registeredUserId" id="registeredUserId" value="{{user.id}}">
+                                    <label class="custom-control custom-radio">
+                                        <input name="member_type" type="radio" class="custom-control-input" value="3" onchange="this.form.submit()" {{ user.member_type === 3 ? 'checked' : '' }} >
+                                        <span class="custom-control-label">Client</span>
+                                    </label>
+                                        
+                                    <label class="custom-control custom-radio">
+                                        <input name="member_type" type="radio" class="custom-control-input" value="2" onchange="this.form.submit()" {{ user.member_type === 2 ? 'checked' : '' }}>
+                                        <span class="custom-control-label">Employee</span>
+                                    </label>
+                                </form>
+                            </td>
+                            <td>
+                                @if(user.accstatus!==3)
+                                    @if(user.member_type===2)
+                                    <!--  member type: Employee  -->
+                                        @if(user.linked_user_id!==0 && user.linked_user_id!==null)
+                                            @each(linkedEmployee in linkedEmployees)
+                                                @if(linkedEmployee.id===$parent.user.linked_user_id)
+                                                {{linkedEmployee.name}}
+                                                @endif
+                                            @endeach
+                                            <form class="editLinkingEmployee" style="float:right">
+                                                <!--form done with ajax-->
+                                                {{ csrfField() }}
+                                                <input type="text" class="form-control form-control-lg" name="email"
+                                                    id="editLinkEmail" value="{{user.email}}" style="display:none;" />
+
+                                                <span class="input-group-append">
+                                                    <button class="btn btn-secondary" type="submit">Unlink User</button>
+                                                </span>
+                                            </form>
+                                        @else
+                                            <form class="linkedEmployeeForm">
+                                                <div class="input-group">
+                                                    {{ csrfField() }}
+                                                    <input type="hidden" name="userType" id="userType" value="2">
+                                                    <input type="hidden" name="linkedUserId" id="linkedUserId" value="">
+                                                    <input type="hidden" name="registeredUserId" id="registeredUserId"
+                                                        value="{{user.id}}">
+                                                    <select class="custom-select flex-grow-1 select2" data-toggle="select2">
+                                                        <option></option>
+                                                        @each(linkedEmployee in linkedEmployees)
+
+                                                        @if(linkedEmployee.id!==$parent.user.linked_user_id)
+                                                        <option value="{{linkedEmployee.id}}">
+                                                            {{lowerCase(linkedEmployee.name)}}
+                                                        </option>
+                                                        @endif
+                                                        @endeach
+                                                    </select>
+                                                    <span class="input-group-append">
+                                                        <button class="btn btn-secondary" type="submit">Link User</button>
+                                                    </span>
+                                                </div>
+                                            </form>
+                                        @endif
+                                    
+                                    @elseif(user.member_type===3)
+                                    <!--  member type: Client  -->
+                                        @if(user.linked_user_id!==0 && user.linked_user_id!==null)
+                                            @each(linkedUser in linkedUsers)
+                                                @if(linkedUser.client_contact_id===$parent.user.linked_user_id)
+                                                {{linkedUser.client_contact_name}}
+                                                @endif
+                                            @endeach
+                                            <form class="editLinkingUser" style="float:right">
+                                                <!--form done with ajax-->
+                                                {{ csrfField() }}
+                                                <input type="text" class="form-control form-control-lg" name="email"
+                                                    id="editLinkEmail" value="{{user.email}}" style="display:none;" />
+
+                                                <span class="input-group-append">
+                                                    <button class="btn btn-secondary" type="submit">Unlink User</button>
+                                                </span>
+                                            </form>
+                                        @else
+                                            <form class="linkedUserForm">
+                                                <div class="input-group">
+                                                    {{ csrfField() }}
+                                                    <input type="hidden" name="userType" id="userType" value="3">
+                                                    <input type="hidden" name="linkedUserId" id="linkedUserId" value="">
+                                                    <input type="hidden" name="registeredUserId" id="registeredUserId"
+                                                        value="{{user.id}}">
+                                                    <select class="custom-select flex-grow-1 select2" data-toggle="select2">
+                                                        <option></option>
+                                                        @each(linkedUser in linkedUsers)
+
+                                                        @if(linkedUser.client_contact_id!==$parent.user.linked_user_id)
+                                                        <option value="{{linkedUser.client_contact_id}}">
+                                                            {{lowerCase(linkedUser.client_contact_name)}}
+                                                        </option>
+                                                        @endif
+                                                        @endeach
+                                                    </select>
+                                                    <span class="input-group-append">
+                                                        <button class="btn btn-secondary" type="submit">Link User</button>
+                                                    </span>
+                                                </div>
+                                            </form>
+                                        @endif
+                                    @endif
+                                @endif
+                            </td>
+                            <td>
+                                <div class="custom-control custom-switch">
+                                    <input type="hidden" class="form-control form-control-lg" name="email"
+                                        value="{{user.email}}" />
+                                    @if(user.accstatus!==3)
+                                    <input type="checkbox" class="custom-control-input switcheInput"
+                                        id="disableEnable{{user.linked_user_id}}" checked data-toggle="tooltip"
+                                        data-placement="top" data-original-title="Disable User">
+                                    <label class="custom-control-label"
+                                        for="disableEnable{{user.linked_user_id}}"></label>
+                                    @else
+                                    <input type="checkbox" class="custom-control-input switcheInput"
+                                        id="disableEnable{{user.linked_user_id}}" data-toggle="tooltip"
+                                        data-placement="top" data-original-title="Enable User">
+                                    <label class="custom-control-label"
+                                        for="disableEnable{{user.linked_user_id}}"></label>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @endeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+
+@section('javascript')
+<script>
+    $(function() {
+        // $(".chooseMemberType").on("change", function(e){
+        //     e.preventDefault();
+        //     var values = $(this).serialize();
+        //     $.ajax({
+        //         url: "{{ route('chooseMemberType') }}",
+        //         type: "post",
+        //         data: values ,
+        //         success: function (res) {
+        //             location.reload(); 
+        //         },
+        //         error: function(xhr, status, error) {
+        //             alert('Something went wrong')
+        //             console.log(xhr.responseText);
+        //         }
+        //     });
+        // })
+        $(".custom-switch .switcheInput").on("change", function(e){
+            var email = $(this).siblings('input[name ="email"]').attr("value")
+            if(e.target.checked){
+                    $.ajax({
+                        url: "{{ route('disableUser') }}",
+                        type: "post",
+                        data: {email: email,status:1} ,
+                        success: function (res) {
+                            //$('#datatables-dashboard-traffic').html($(res).find("#datatables-dashboard-traffic"));
+                        location.reload(); 
+                        },
+                        error: function(xhr, status, error) {
+                            alert('Something went wrong')
+                            console.log(xhr.responseText);
+                        }
+                    });
+            }else{
+                var answer = window.confirm("Are you sure you want to delete this User?")
+                if(answer!==false){
+                    $.ajax({
+                        url: "{{ route('disableUser') }}",
+                        type: "post",
+                        data: {email: email,status:3} ,
+                        success: function (res) {
+                            //$('#datatables-dashboard-traffic').html($(res).find("#datatables-dashboard-traffic"));
+                        location.reload(); 
+                        },
+                        error: function(xhr, status, error) {
+                            alert('Something went wrong')
+                            console.log(xhr.responseText);
+                        }
+                    });
+                }else{
+                    e.target.checked=false
+                    e.siblings(".custom-control-label").text("Enable")
+                }
+            }
+        })
+    //     // Select2
+        $(".linkedUserForm .select2").select2({
+            placeholder: "Select a user",
+            allowClear: true,
+            width: 300
+        });
+        $('.linkedUserForm .select2').on('change', function (e) {
+            $(this).siblings("#linkedUserId").val($(this).val())
+            });
+        $(".linkedEmployeeForm .select2").select2({
+            placeholder: "Select an employee",
+            allowClear: true,
+            width: 300
+        });
+        $('.linkedEmployeeForm .select2').on('change', function (e) {
+            $(this).siblings("#linkedEmployeeId").val($(this).val())
+            });
+        $("#datatables-dashboard-traffic").DataTable({
+            columns: [
+                null,
+                null,
+                null,
+                { "searchable": false },
+                { "searchable": false, "orderable": false },
+                { "searchable": false, "orderable": false },
+            ],
+            pageLength: 10,
+            lengthChange: true,
+            bFilter: true,
+            autoWidth: false,
+            aaSorting: []
+        });
+
+    });
+        $('form#activateBtn').submit(function(e) {
+            e.preventDefault();
+            var values = $(this).serialize();
+            $.ajax({
+                url: "{{ route('activateUser') }}",
+                type: "post",
+                data: values ,
+                success: function (res) {
+                    var message = "Message Sent to the activated account";
+                    var title = "";
+                    var type = "success";
+                    showFlashMessages(message,title,type)
+                    $('#datatables-dashboard-traffic').html($(res).find("#datatables-dashboard-traffic"));
+                },
+                error: function(xhr, status, error) {
+                    alert('Something went wrong')
+                    console.log(xhr.responseText);
+                }
+            });
+        })
+        
+
+
+        $('form.linkedUserForm').submit(function(e) {
+                e.preventDefault();
+                var values = $(this).serialize();
+                $.ajax({
+                url: "{{ route('linkUser') }}",
+                type: "post",
+                data: values ,
+                success: function (res) {
+                        //$('#datatables-dashboard-traffic').html($(res).find("#datatables-dashboard-traffic"));
+                        location.reload(); 
+                },
+                error: function(xhr, status, error) {
+                    alert('Something went wrong')
+                    console.log(xhr.responseText);
+                }
+            });
+        })
+        $('form.linkedEmployeeForm').submit(function(e) {
+                e.preventDefault();
+                var values = $(this).serialize();
+                console.log(values)
+            $.ajax({
+                url: "{{ route('linkUser') }}",
+                type: "post",
+                data: values ,
+                success: function (res) {
+                        location.reload(); 
+                },
+                error: function(xhr, status, error) {
+                    alert('Something went wrong')
+                    console.log(xhr.responseText);
+                }
+            });
+        })
+
+
+        $('form.editLinkingUser').submit(function(e) {
+            var answer = window.confirm("Are you sure you want to unlinked user?")
+            e.preventDefault();
+            var values = $(this).serialize();
+            if(answer!==false){
+                $.ajax({
+                    url: "{{ route('unlinkUser') }}",
+                    type: "post",
+                    data: values ,
+                    success: function (res) {
+                        //console.log(res)
+                        //$('#datatables-dashboard-traffic').html($(res).find("#datatables-dashboard-traffic"));
+                        location.reload(); 
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Something went wrong')
+                        console.log(xhr.responseText);
+                    }
+                });
+                
+            }
+        })
+</script>
+@endsection

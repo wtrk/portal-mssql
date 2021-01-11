@@ -1,0 +1,213 @@
+@layout('layout.app')
+@section('css')
+<link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
+<style>
+    .handsontable tbody th,
+    .handsontable thead th,
+    .handsontable tbody th.ht__active_highlight,
+    .handsontable thead th.ht__active_highlight {
+        background-color: #696969;
+        color: #fff;
+    }
+
+    #text-error {
+        color: #ff4c42
+    }
+
+    #step-2 {
+        overflow-y: hidden;
+    }
+
+    .step-content {
+        border-top: 20px solid #f5f9fc !important;
+    }
+
+    #step1Submit,
+    #step2Submit,
+    #step2Back {
+        width: 150px !important
+    }
+
+    #smartwizard-arrows-primary .nav-tabs li a {
+        width: 155px;
+        height: 68px;
+    }
+</style>
+@endsection
+@section('content')
+<h1 class="h3 mb-3">Add Member(s)</h1>
+
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div id="smartwizard-arrows-primary" class="wizard wizard-primary mb-4" style="display:none;">
+            <ul>
+                <li>
+                    <a href="#arrows-primary-step-1">Step 1<br /><small>Member Details</small></a>
+                </li>
+                <li>
+                    <a href="#arrows-primary-step-2">Step 2<br /><small>Validate</small></a>
+                </li>
+                <li>
+                    <a href="#arrows-primary-step-3">Step 3<br /><small>Upload Documents</small></a>
+                </li>
+            </ul>
+
+            <div>
+                <div id="arrows-primary-step-1" class="">
+                    <div class="messagesContainer"></div>
+
+                    <div class="row mb-3 p-3">
+                        <div class="col-6" id="MASTERcontainer">
+                            <select class="selectMaster js-states form-control">
+                                <option></option>
+                                @each(master_account in master_accounts)
+                                <option value="{{master_account.master_account}}">{{master_account.master_account}}
+                                </option>
+                                @endeach
+                            </select>
+                        </div>
+
+                        <div class="col-6" id="CORcontainer">
+                            <select class="selectCOR js-states form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3 p-3">
+                        <div class="col-12" id="step-2">
+                        </div>
+                    </div>
+                    <div class="btnInSmartwizard">
+                        <div class="d-flex">
+                            <div id="text-error"></div>
+                            <button class="btn btn-primary ml-auto" id="step1Submit">Next</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="arrows-primary-step-2" class="">
+                    <div class="content-step-2"></div>
+                    <div class="btnInSmartwizard">
+                        <div class="d-flex flex-row-reverse">
+                            <button class="btn btn-primary" id="step2Submit">Next</button>
+                            <button class="btn btn-primary mr-2" id="step2Back">Back</button>
+                            <div id="text-error mr-auto"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="arrows-primary-step-3" class="">
+                    <div class="content-step-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        @endsection
+        @section('javascript')
+        <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+        {{ script('assets/js/hot-functions') }}
+        <script>
+            $(document).ready(function() {
+                var section={{{ toJSON(section) }}}
+                let dataToInsert=[]
+                if(section=="resubmitted"){
+                    dataToInsert={{{toJSON(memberToResubmit)}}}
+                    const master_account=dataToInsert.master_account
+                    const cor=dataToInsert.cor
+                    $.post("{{ route('addAMember1') }}",
+                        {
+                            master_account: master_account,
+                            cor: cor,
+                            dataToInsert:dataToInsert
+                        },
+                        function(data, status){
+                            $("#MASTERcontainer").html("<strong>MASTER Account:</strong> "+master_account+"</strong>")
+                            $("#CORcontainer").html("<strong>Country of Residence:</strong> "+cor+"</strong>")
+                            $("#step-2").html(data)
+                        });
+                    
+                }
+
+
+
+                $("#step1Submit").hide();
+                //$("#step2Submit").hide();
+                $("#next-btn").on("click", function() {
+                    // Navigate next
+                    $('#smartwizard-arrows-primary').smartWizard("next");
+                    return true;
+                });
+                $("#smartwizard-arrows-primary").smartWizard({
+                    selected:0,
+                    theme: "arrows",
+                    showStepURLhash: false,
+                    transitionEffect:'slide',
+                    toolbarSettings: {
+                        toolbarPosition: 'none', // none, top, bottom, both
+                    },
+                });
+                $("#smartwizard-arrows-primary").fadeIn();
+        
+                $("#step2Back").click(function(){
+                    $('#smartwizard-arrows-primary').smartWizard("prev");
+                })
+                var btnFinish = $('<button></button>').text('Finish').addClass('btn btn-info').on('click', function(){ alert('Finish Clicked'); });
+                // Initialize the showStep event
+
+                $("#smartwizard-arrows-primary").on("showStep", function(e, anchorObject, index, stepDirection, stepPosition) {
+                    const stepIndex=index+1
+                    if(stepDirection=="forward"){
+                        if(stepIndex==2){
+                            $(".content-step-2").html('<div class="text-center w-100"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>')
+                        }else if(stepIndex==3){
+                            $(".content-step-3").html('<div class="text-center w-100"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>')
+                        }
+                    }
+                });
+
+                ////////////////start////////////////STEP 1////////////////start////////////////
+                $(".selectMaster").val('').change();
+                $(".selectMaster").select2({
+                    placeholder: "Select MASTER Account"
+                });
+                $('.selectMaster').on('change', function (e) {
+                    master_account =$(this).val();
+                    $(".selectCOR option").remove()
+                    $.ajax({
+                        url: "{{ route('getCORFromMaster') }}",
+                        type: "get",
+                        data: {master_account:$(this).val()},
+                        success: function (res) {
+                            $(".selectCOR").append("<option></option>")
+                            $.each(res, function( index, value ) {
+                                $(".selectCOR").append("<option value='"+value.cor +"'>"+value.cor +"</option>")
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            alert('Something went wrong')
+                            console.log(xhr.responseText);
+                        }
+                    });
+                });
+
+                $(".selectCOR").select2({
+                    placeholder: "Select Country of Residence"
+                });               
+                $('.selectCOR').on('change', function (e) {
+                    $("#handsOnTableCont").css("display","block")
+                    cor =$(this).val();
+                    $("#step-2").html('<div class="text-center w-100"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>')
+                    $.post("{{ route('addAMember1') }}",
+                    {
+                        master_account: master_account,
+                        cor: cor
+                    },
+                    function(data, status){
+                        $("#MASTERcontainer").html("<strong>MASTER Account:</strong> "+master_account+"</strong>")
+                        $("#CORcontainer").html("<strong>Country of Residence:</strong> "+cor+"</strong>")
+                        $("#step-2").html(data)
+                    });
+                })
+            })
+        </script>
+        @endsection
