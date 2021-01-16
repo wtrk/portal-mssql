@@ -36,16 +36,23 @@
     </div>
 </div>
 <div class="row mb-3" id="handsOnTableCont">
-    <div class="col-12" style="overflow-x:auto">
+    <div class="col-12">
 <table id="datatables" class="table table-striped table-bordered">
     <thead>
         <tr>
-            <th>Insured type</th>
+            <th>Serial</th>
+            <th>Company Name</th>
+            <th>Department</th>
+            <th>Employee Staff ID</th>
+            <th>Card no.</th>
             <th>Full Name</th>
             <th>Date of birth</th>
             <th>Gender</th>
             <th>Nationality</th>
             <th>Marital Status</th>
+            <th>Cost Sharing</th>
+            <th>Position</th>
+            <th>Grade</th>
             <th>Mobile</th>
             <th>Email</th>
             @each(policy in policiesDb)
@@ -57,11 +64,18 @@
         @each(censusEntry in uidData)
         <tr>
             <td>{{censusEntry.insured_type}}</td>
+            <th>{{censusEntry.company_name}}</th>
+            <th>{{censusEntry.s_department}}</th>
+            <th>{{censusEntry.staff_id}}</th>
+            <th>{{censusEntry.card_number}}</th>
             <td>{{censusEntry.first_name}} {{censusEntry.second_name}} {{censusEntry.last_name}}</td>
             <td class="dateFormat">{{censusEntry.dob}}</td>
             <td>{{censusEntry.gender}}</td>
             <td>{{censusEntry.nationality}}</td>
             <td>{{censusEntry.marital_status}}</td>
+            <th>{{censusEntry.cost_sharing}}</th>
+            <th>{{censusEntry.position}}</th>
+            <th>{{censusEntry.grade}}</th>
             <td>{{censusEntry.mobile}}</td>
             <td>{{censusEntry.email}}</td>
 
@@ -70,7 +84,7 @@
                 @each(updatedUid in updatedUidDb)
                 @if(updatedUid.master_policy_clover_id==$parent.policy.master_policy_clover_id &&
                 updatedUid.uid==$parent.$parent.censusEntry.uid)
-                {{updatedUid.cat}}
+                {{updatedUid.limit ? updatedUid.limit : updatedUid.cat}}
                 @endif
                 @endeach
             </td>
@@ -89,8 +103,23 @@
             var dateNewFormat=moment($(this).text()).format("DD MMM YYYY")
             $(this).text((dateNewFormat==="Invalid date") ? "-" : dateNewFormat)
         });
-        $("#datatables").DataTable({
+        $("#datatables").removeAttr('width').DataTable({
             dom: 'Bfrtip',
+            scrollX: true,
+            autoWidth: false,fixedColumns: true,
+            // columns: [
+            //     { "width": 100},
+            //     { "width": 200},
+            //     { "width": 100},
+            //     { "width": 70},
+            //     { "width": 100},
+            //     { "width": 70},
+            //     { "width": 150},
+            //     { "width": 150},
+            //     { "width": 150},
+            //     { "width": 150},
+            //     { "width": 150}
+            // ],
             buttons: [
                 { 
                     extend: 'excel', 

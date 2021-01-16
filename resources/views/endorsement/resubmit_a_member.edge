@@ -232,37 +232,37 @@
                 }
             }
         }
-        var employeeStaffId= function (value,callback){
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                var min2=minLengthfunction(value,2)
-                var notEmpty=notEmptyfunction(value)
-                if(notEmpty.validation==true){
-                    if(min2.validation==true){
-                        callback(true)
-                        $("#text-error").html("")
-                    }else{
-                        callback(false)
-                        $("#text-error").html("<p>The selected data field "+min2.message+"</p>")
-                    }
-                }else{
-                    if(relationValue=="2= SPOUSE" || relationValue=="3= CHILD"){
-                        callback(false)
-                        $("#text-error").html("<p>The selected data field "+notEmpty.message+"</p>")
-                    }else{
-                        callback(true)
-                        $("#text-error").html("")
-                    }
-                }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
+        // var employeeStaffId= function (value,callback){
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //         var min2=minLengthfunction(value,2)
+        //         var notEmpty=notEmptyfunction(value)
+        //         if(notEmpty.validation==true){
+        //             if(min2.validation==true){
+        //                 callback(true)
+        //                 $("#text-error").html("")
+        //             }else{
+        //                 callback(false)
+        //                 $("#text-error").html("<p>The selected data field "+min2.message+"</p>")
+        //             }
+        //         }else{
+        //             if(relationValue=="2= SPOUSE" || relationValue=="3= CHILD"){
+        //                 callback(false)
+        //                 $("#text-error").html("<p>The selected data field "+notEmpty.message+"</p>")
+        //             }else{
+        //                 callback(true)
+        //                 $("#text-error").html("")
+        //             }
+        //         }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
         var positionField= function (value,callback){
             if(emptyRow){
                 callback(true)

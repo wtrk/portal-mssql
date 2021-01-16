@@ -1,10 +1,10 @@
 
-var notEmpty = function (value, callback) {
+var notEmpty = (value, callback) => {
   var resNotEmpty = notEmptyfunction(value)
   callback(resNotEmpty.valid)
   return $("#text-error").html(resNotEmpty.message)
 };
-var employeeStaffId = function (value, callback) {
+var employeeStaffId = (value, callback) => {
   var resNotEmpty = notEmptyfunction(value)
   if (!resNotEmpty.valid) {
     callback(resNotEmpty.valid)
@@ -15,7 +15,7 @@ var employeeStaffId = function (value, callback) {
     return $("#text-error").html(resMin2.message)
   }
 }
-var namesValidation = function (value, callback) {
+var namesValidation = (value, callback) => {
   var resNotEmpty = notEmptyfunction(value)
   var resMin2 = minLengthfunction(value, 2)
   if (!resNotEmpty.valid) {
@@ -30,7 +30,7 @@ var namesValidation = function (value, callback) {
     return $("#text-error").html(resLettersSpaces.message)
   }
 }
-var min2ifNotEmpty = function (value, callback) {
+var min2ifNotEmpty = (value, callback) => {
   var resNotEmpty = notEmptyfunction(value)
   var resMin2 = minLengthfunction(value, 2)
   if (!resNotEmpty.valid) {
@@ -45,7 +45,7 @@ var min2ifNotEmpty = function (value, callback) {
     return $("#text-error").html(resLettersSpaces.message)
   }
 };
-var acceptableDate = function (value = "", callback) {
+var acceptableDate = (value = "", callback) => {
 
   var resNotEmpty = notEmptyfunction(value)
   if (!resNotEmpty.valid) {
@@ -72,7 +72,7 @@ var acceptableDate = function (value = "", callback) {
     }
   }
 }
-var positionField = function (value, callback) {
+var positionField = (value, callback) => {
   if (relationValue == "1= PRINCIPAL" && nationalityValue == "Kingdom Of Saudi Arabia") {
     notEmpty(value, callback)
   } else {
@@ -91,7 +91,7 @@ var positionField = function (value, callback) {
     }
   }
 }
-var alphaNumericIfNotEmpty = function (value, callback) {
+var alphaNumericIfNotEmpty = (value, callback) => {
   var resNotEmpty = notEmptyfunction(value)
   if (!resNotEmpty.valid) {
     callback(resNotEmpty.valid)
@@ -102,7 +102,7 @@ var alphaNumericIfNotEmpty = function (value, callback) {
     return $("#text-error").html(resAlphaNumeric.message)
   }
 }
-var phoneNumberIfPrincipal = function (value, callback) {
+var phoneNumberIfPrincipal = (value, callback) => {
   var resNotEmpty = notEmptyfunction(value)
   if (resNotEmpty.valid) {
     var resValidPhone = validPhoneFunction(value)
@@ -118,7 +118,7 @@ var phoneNumberIfPrincipal = function (value, callback) {
     return $("#text-error").html("")
   }
 }
-var validEmailIfPrinciple = function (value, callback) {
+var validEmailIfPrinciple = (value, callback) => {
   var resNotEmpty = notEmptyfunction(value)
   if (resNotEmpty.valid) {
     var resValidEmail = validEmailfunction(value)
@@ -133,6 +133,184 @@ var validEmailIfPrinciple = function (value, callback) {
     return $("#text-error").html("")
   }
 }
+var entityTypesValidation = (value, callback) => {
+  var resNotEmpty = notEmptyfunction(value)
+  if (resNotEmpty.valid) {
+    if(nationalityValue=="United Arab Emirates"){
+      callback(false)
+      $("#text-error").html("This field should be empty for emiratis")
+    }else{
+      callback(true)
+      $("#text-error").html("")
+    }
+  }else{
+    if(nationalityValue=="United Arab Emirates"){
+      callback(true)
+      $("#text-error").html("")
+    }else{
+      callback(false)
+      $("#text-error").html("This field is mandatory")
+    }
+  }
+}
+var validEmailAndMandatory = (value, callback) => {
+  var resNotEmpty = notEmptyfunction(value)
+  if (resNotEmpty.valid) {
+    var validEmail=validEmailfunction(value)
+    callback(validEmail.valid)
+    $("#text-error").html(validEmail.message)
+  }else{
+    callback(false)
+    $("#text-error").html("This field is mandatory")
+  }
+}
+var memberTypesValidation = (value, callback) => {
+  const timestampFromValue=Date.parse(ageValue);
+  const currentTimestamp=Date.now()
+  const agePerDays=Math.floor((currentTimestamp-timestampFromValue) / (24 * 60 * 60 * 1000));
+
+  if(agePerDays<=31){
+    if(value=="6 = Newborn - Birth Certificate ID"){
+        callback(true)
+        $("#text-error").html("")
+    }else{
+        callback(false)
+        $("#text-error").html("It is mandatory to choose '6 = Newborn - Birth Certificate ID' for children under 1 month")
+    }
+  }else{
+    if(nationalityValue=="United Arab Emirates"){
+        if(value=="1 = UAE National – Emirates ID"){
+            callback(true)
+            $("#text-error").html("")
+        }else{
+            callback(false)
+            $("#text-error").text("It is mandatory to choose '1 = UAE National – Emirates ID' for Emiratis")
+        }
+    }else if(nationalityValue=="Oman" || nationalityValue=="Bahrain" || nationalityValue=="Kuwait" || nationalityValue=="Qatar" || nationalityValue=="Kingdom Of Saudi Arabia"){
+        if(value=="2 = GCC National - Passport"){
+            callback(true)
+            $("#text-error").html("")
+        }else{
+            callback(false)
+            $("#text-error").text("It is mandatory to choose '2 = GCC National - Passport' if you are from "+nationalityValue)
+        }
+    }else{
+        if(uaeVisaIssuanceValue=="Ajman"){
+            if(value=="4 = Expat whos residency is issued in Dubai - File Number"){
+                callback(true)
+                $("#text-error").html("")
+            }else{
+                callback(false)
+                $("#text-error").text("It is mandatory to choose '4 = Expat whos residency is issued in Dubai - File Number'")
+            }
+        }else{
+            if(value=="5 = Expat whos residency is issued in Emirates other than Dubai - File Number"){
+                callback(true)
+                $("#text-error").html("")
+            }else{
+                callback(false)
+                $("#text-error").text("It is mandatory to choose '5 = Expat whos residency is issued in Emirates other than Dubai - File Number' in UAE for foreigner")
+            }
+        }
+    }
+  }
+
+
+}
+var UAEnumFormat = (value, callback) => {
+  var resNotEmpty = notEmptyfunction(value)
+  if (resNotEmpty.valid) {
+    /// commented waiting to buy the license
+  //         var UAEnumFormat=UAEnumFormatfunction(value)
+  //         if(UAEnumFormat.validation==true){
+  //             callback(true)
+  //             $("#text-error").html("")
+  //         }else{
+  //             callback(false)
+  //             $("#text-error").html("<p>The selected data field "+UAEnumFormat.message+"</p>")
+  //         }
+    callback(true)
+    return $("#text-error").html("")
+  } else {
+    callback(false)
+    return $("#text-error").html("This field is mandatory")
+  }
+
+
+
+
+  callback(true)
+}
+var emiratesIdNumber=(value,callback) => {
+  var resNotEmpty = notEmptyfunction(value)
+  if(resNotEmpty.valid){
+      var validIdNum=validIdNumFunction(value,18,3)
+      if(validIdNum.validation==true){
+          callback(true)
+          $("#text-error").html("")
+      }else{
+          callback(false)
+          $("#text-error").html("The selected data field must be a valid emirates Id number")
+      }
+  }else{
+      callback(false)
+      $("#text-error").html("This field is mandatory")
+  }
+}
+var estIdValidation=(value,callback) => {
+        var resNotEmpty=notEmptyfunction(value)
+        if(resNotEmpty.valid){
+          if(value==gdrfaValue){
+              callback(false)
+              $("#text-error").html("This field should not be equal to the GDRFAFileNUmber value")
+          }else{
+            if(memberTypeValue=="UAE National – Emirates ID" || memberTypeValue=="GCC National - Passport"){
+              $("#text-error").html("This field should be empty for "+memberTypeValue)
+              return callback(false)
+            }
+            if(entityTypeValue=="Resident" || entityTypeValue=="Investor Visa"){
+                var validIdNum=validIdNumFunction(value,13,3)
+                if(validIdNum.validation==true){
+                    callback(true)
+                    $("#text-error").html("")
+                }else{
+                    callback(false)
+                    $("#text-error").html("The selected data field "+validIdNum.message)
+                }
+
+            }else if(entityTypeValue=="UAE Citizen" || entityTypeValue=="GCC Citizen"){
+                var uidNumber=uidNumberFunction(value,6,15)
+                if(uidNumber.validation==true){
+                    callback(true)
+                    $("#text-error").html("")
+                }else{
+                    callback(false)
+                    $("#text-error").html("The selected data field "+uidNumber.message)
+                }
+            }else{
+                var uidNumber=uidNumberFunction(value,9,11)
+                if(uidNumber.validation==true){
+                    callback(true)
+                    $("#text-error").html("")
+                }else{
+                    callback(false)
+                    $("#text-error").html("The selected data field "+uidNumber.message)
+                }
+            }
+          }
+        }else{
+          if(memberTypeValue=="UAE National – Emirates ID" || memberTypeValue=="GCC National - Passport"){
+            $("#text-error").html("")
+            return callback(true)
+          }
+          callback(false)
+          $("#text-error").html("This field is mandatory")
+        
+        }
+
+}
+
+
 
 //HOT Validations Function --START--
 function notEmptyfunction(value) {
@@ -168,24 +346,30 @@ function alphaNumericfunction(value) {
   }
 }
 function validPhoneFunction(value) {
-  const validPhoneFormat = $.ajax({
-    type: "GET",
-    url: "http://apilayer.net/api/validate",
-    dataType: "json",
-    data: { access_key: "386661ddd43191ec181a736418ab4702", number: value },
-    async: false,
-    done: function (results) {
-      JSON.parse(results);
-      return results;
-    },
-    fail: function (jqXHR, textStatus, errorThrown) {
-      console.log("Could not get posts, server response: " + textStatus + ": " + errorThrown);
-    },
-  }).responseJSON;
-  console.log(validPhoneFormat)
+  // const validPhoneFormat = $.ajax({
+  //   type: "GET",
+  //   url: "http://apilayer.net/api/validate",
+  //   dataType: "json",
+  //   data: { access_key: "386661ddd43191ec181a736418ab4702", number: value },
+  //   async: false,
+  //   done: function (results) {
+  //     JSON.parse(results);
+  //     return results;
+  //   },
+  //   fail: function (jqXHR, textStatus, errorThrown) {
+  //     console.log("Could not get posts, server response: " + textStatus + ": " + errorThrown);
+  //   },
+  // }).responseJSON;
+  // console.log(validPhoneFormat)
+  // return {
+  //   valid: (validPhoneFormat.valid) ? true : false,
+  //   message: (validPhoneFormat.valid) ? "" : "This field must have a valid phone number"
+  // }
+
+  //remove the below when subscribe
   return {
-    valid: (validPhoneFormat.valid) ? true : false,
-    message: (validPhoneFormat.valid) ? "" : "This field must have a valid phone number"
+    valid: true,
+    message: ""
   }
 }
 function validEmailfunction(value) {
@@ -200,14 +384,10 @@ function validEmailfunction(value) {
 //Functions below should be updated --START--
 function validIdNumFunction(value, length, distinctLength) {
   var arr = $.unique(value.split(""));
-  var distinctDigLength = arr.length;
+  var distinctDifLength = arr.length;
   var first3Num = value.substring(0, 3).match(/^[0-9]+$/);
 
-  if (
-    value.length == length &&
-    distinctDigLength >= distinctLength &&
-    first3Num != null
-  ) {
+  if (value.length == length && distinctDifLength >= distinctLength && first3Num != null) {
     return {
       validation: true,
       message: "",
@@ -221,9 +401,9 @@ function validIdNumFunction(value, length, distinctLength) {
 }
 function distinctNumberFunction(value) {
   var arr = $.unique(value.split(""));
-  var distinctDigLength = arr.length;
+  var distinctDifLength = arr.length;
 
-  if (distinctDigLength >= 3) {
+  if (distinctDifLength >= 3) {
     return {
       validation: true,
       message: "",
@@ -237,13 +417,13 @@ function distinctNumberFunction(value) {
 }
 function uidNumberFunction(value, lengthMin, lengthMax) {
   var arr = $.unique(value.split(""));
-  var distinctDigLength = arr.length;
+  var distinctDifLength = arr.length;
   var allNum = value.match(/^[0-9]+$/);
 
   if (
     value.length >= lengthMin &&
     value.length <= lengthMax &&
-    distinctDigLength >= 3 &&
+    distinctDifLength >= 3 &&
     allNum != null
   ) {
     return {

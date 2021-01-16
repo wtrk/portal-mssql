@@ -88,7 +88,6 @@
         cor={{{ toJSON(cor) }}},
         HOTcols={{{ toJSON(HOTcols) }}}
         const policiesLength=policies.length
-        console.log(policiesDB)
         //Validations done: dropdown, notEmpty, email, minimum length 2, if filled min length
         var emiratesIdNumber=function(value,callback){
             
@@ -176,208 +175,6 @@
                             callback(true)
                             $("#text-error").html("")
                         }
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var memberTypesValidation=function(value,callback){
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    const timestampFromValue=Date.parse(ageValue);
-                    const currentTimestamp=Date.now()
-                    const agePerDays=Math.floor((currentTimestamp-timestampFromValue) / (24 * 60 * 60 * 1000));
-                    var notEmpty=notEmptyfunction(value)
-                    if(notEmpty.validation==true){
-                        if(agePerDays<=31){
-                            if(value=="Newborn - Birth Certificate ID"){
-                                callback(true)
-                                $("#text-error").html("")
-                            }else{
-                                callback(false)
-                                $("#text-error").html("It is mandatory to choose 'Newborn - Birth Certificate ID' for children under 1 month")
-                            }
-                        }else{
-                            if(nationalityValue=="United Arab Emirates"){
-                                if(value=="UAE National – Emirates ID"){
-                                    callback(true)
-                                    $("#text-error").html("")
-                                }else{
-                                    callback(false)
-                                    $("#text-error").text("It is mandatory to choose 'UAE National – Emirates ID' for Emiratis")
-                                }
-                            }else if(nationalityValue=="Oman" || nationalityValue=="Bahrain" || nationalityValue=="Kuwait" || nationalityValue=="Qatar" || nationalityValue=="Kingdom Of Saudi Arabia"){
-                                if(value=="GCC National - Passport"){
-                                    callback(true)
-                                    $("#text-error").html("")
-                                }else{
-                                    callback(false)
-                                    $("#text-error").text("It is mandatory to choose 'GCC National - Passport' if you are from "+nationalityValue)
-                                }
-                            }else{
-                                if(uaeVisaIssuanceValue=="Ajman"){
-                                    if(value=="Expat who's residency is issued in Dubai - File Number"){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").text("It is mandatory to choose 'Expat who's residency is issued in Dubai - File Number'")
-                                    }
-                                }else{
-                                    if(value=="Expat who's residency is issued in Emirates other than Dubai - File Number"){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").text("It is mandatory to choose 'Expat who's residency is issued in Emirates other than Dubai - File Number'")
-                                    }
-                                }
-                            }
-                        }
-                    }else{
-                        callback(false)
-                        $("#text-error").text("The selected data field " + notEmpty.message)
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var entityTypesValidation=function(value,callback){
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    var notEmpty=notEmptyfunction(value)
-                    if(nationalityValue=="United Arab Emirates"){
-                        if(notEmpty.validation==false){
-                            callback(true)
-                            $("#text-error").html("")
-                        }else{
-                            callback(false)
-                            $("#text-error").html("This field should be empty for emiratis")
-                        }
-                    }else{
-                        if(notEmpty.validation==true){
-                            callback(true)
-                            $("#text-error").html("")
-                        }else{
-                            callback(false)
-                            $("#text-error").html("<p>The selected data field "+notEmpty.message+"</p>")
-                        }
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var estIdValidation=function(value,callback){
-            
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    var notEmpty=notEmptyfunction(value)
-                    if(memberTypeValue=="UAE National – Emirates ID" || memberTypeValue=="GCC National - Passport"){
-                        if(notEmpty.validation==false){
-                            callback(true)
-                            $("#text-error").html("")
-                        }else{
-                            callback(false)
-                            $("#text-error").html("This field should be empty")
-                        }
-                    }else{
-                        if(notEmpty.validation==true){
-                            if(value==gdrfaValue){
-                                callback(false)
-                                $("#text-error").html("This field should not be equal to the GDRFAFileNUmber value")
-                            }else{
-                                if(entityTypeValue=="Resident" || entityTypeValue=="Investor Visa"){
-                                    var validIdNum=validIdNumFunction(value,13,3)
-                                    if(validIdNum.validation==true){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").html("The selected data field "+validIdNum.message)
-                                    }
-
-                                }else if(entityTypeValue=="UAE Citizen" || entityTypeValue=="GCC Citizen"){
-                                    var uidNumber=uidNumberFunction(value,6,15)
-                                    if(uidNumber.validation==true){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").html("The selected data field "+uidNumber.message)
-                                    }
-                                }else{
-                                    var uidNumber=uidNumberFunction(value,9,11)
-                                    if(uidNumber.validation==true){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").html("The selected data field "+uidNumber.message)
-                                    }
-                                }
-                                callback(true)
-                                $("#text-error").html("")
-                            }
-                        }else{
-                            callback(false)
-                            $("#text-error").html("The selected data field "+notEmpty.message)
-                        }
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var UAEnumFormat=function(value,callback){
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    var UAEnumFormat=UAEnumFormatfunction(value)
-                    if(UAEnumFormat.validation==true){
-                        callback(true)
-                        $("#text-error").html("")
-                    }else{
-                        callback(false)
-                        $("#text-error").html("<p>The selected data field "+UAEnumFormat.message+"</p>")
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var validEmailAndMandatory = function (value, callback) {
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                var notEmpty=notEmptyfunction(value)
-                var validEmail=validEmailfunction(value)
-                    if(notEmpty.validation==true && validEmail.validation==true){
-                        callback(true)
-                        $("#text-error").html("")
-                    }else{
-                        callback(false)
-                        $("#text-error").html("<p>The selected data field "+notEmpty.message+validEmail.message+"</p>")
                     }
                 }else{
                     callback(false)
@@ -678,12 +475,14 @@
 
         })
             if(invalidDetails){
+                console.log(invalidDetails)
                 invalidDetails.forEach((rowDetails,rowIndex) => {
-                    rowDetails.forEach(cellProp => {
-                        if(cellProp.isValid=="false"){
-                            hot.setCellMeta(rowIndex,cellProp.colIndex, 'valid', false);
+                    Object.keys(rowDetails).forEach((key) => {
+                        let e=rowDetails[key]
+                        if(e.isValid=="false"){
+                            hot.setCellMeta(rowIndex,e.colIndex, 'valid', false);
                         }
-                    })
+                    });
                 })
             }
             $("#step2Submit").fadeIn();

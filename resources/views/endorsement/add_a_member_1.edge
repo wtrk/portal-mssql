@@ -126,27 +126,6 @@
         if(dataToInsert.DOB){
             dataToInsert.DOB=moment(dataToInsert.DOB,"MMM DD YYYY hh:mm a").format("DD/MM/YYYY")
         }
-        var emiratesIdNumber=function(value,callback){
-            
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    var validIdNum=validIdNumFunction(value,18,3)
-                    if(validIdNum.validation==true){
-                        callback(true)
-                        $("#text-error").html("")
-                    }else{
-                        callback(false)
-                        $("#text-error").html("The selected data field "+validIdNum.message)
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
         var distinctNumbers=function(value,callback){
             
             if(emptyRow){
@@ -212,208 +191,6 @@
                             callback(true)
                             $("#text-error").html("")
                         }
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var memberTypesValidation=function(value,callback){
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    const timestampFromValue=Date.parse(ageValue);
-                    const currentTimestamp=Date.now()
-                    const agePerDays=Math.floor((currentTimestamp-timestampFromValue) / (24 * 60 * 60 * 1000));
-                    var notEmpty=notEmptyfunction(value)
-                    if(notEmpty.validation==true){
-                        if(agePerDays<=31){
-                            if(value=="Newborn - Birth Certificate ID"){
-                                callback(true)
-                                $("#text-error").html("")
-                            }else{
-                                callback(false)
-                                $("#text-error").html("It is mandatory to choose 'Newborn - Birth Certificate ID' for children under 1 month")
-                            }
-                        }else{
-                            if(nationalityValue=="United Arab Emirates"){
-                                if(value=="UAE National – Emirates ID"){
-                                    callback(true)
-                                    $("#text-error").html("")
-                                }else{
-                                    callback(false)
-                                    $("#text-error").text("It is mandatory to choose 'UAE National – Emirates ID' for Emiratis")
-                                }
-                            }else if(nationalityValue=="Oman" || nationalityValue=="Bahrain" || nationalityValue=="Kuwait" || nationalityValue=="Qatar" || nationalityValue=="Kingdom Of Saudi Arabia"){
-                                if(value=="GCC National - Passport"){
-                                    callback(true)
-                                    $("#text-error").html("")
-                                }else{
-                                    callback(false)
-                                    $("#text-error").text("It is mandatory to choose 'GCC National - Passport' if you are from "+nationalityValue)
-                                }
-                            }else{
-                                if(uaeVisaIssuanceValue=="Ajman"){
-                                    if(value=="Expat who's residency is issued in Dubai - File Number"){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").text("It is mandatory to choose 'Expat who's residency is issued in Dubai - File Number'")
-                                    }
-                                }else{
-                                    if(value=="Expat who's residency is issued in Emirates other than Dubai - File Number"){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").text("It is mandatory to choose 'Expat who's residency is issued in Emirates other than Dubai - File Number'")
-                                    }
-                                }
-                            }
-                        }
-                    }else{
-                        callback(false)
-                        $("#text-error").text("The selected data field " + notEmpty.message)
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var entityTypesValidation=function(value,callback){
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    var notEmpty=notEmptyfunction(value)
-                    if(nationalityValue=="United Arab Emirates"){
-                        if(notEmpty.validation==false){
-                            callback(true)
-                            $("#text-error").html("")
-                        }else{
-                            callback(false)
-                            $("#text-error").html("This field should be empty for emiratis")
-                        }
-                    }else{
-                        if(notEmpty.validation==true){
-                            callback(true)
-                            $("#text-error").html("")
-                        }else{
-                            callback(false)
-                            $("#text-error").html("<p>The selected data field "+notEmpty.message+"</p>")
-                        }
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var estIdValidation=function(value,callback){
-            
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    var notEmpty=notEmptyfunction(value)
-                    if(memberTypeValue=="UAE National – Emirates ID" || memberTypeValue=="GCC National - Passport"){
-                        if(notEmpty.validation==false){
-                            callback(true)
-                            $("#text-error").html("")
-                        }else{
-                            callback(false)
-                            $("#text-error").html("This field should be empty")
-                        }
-                    }else{
-                        if(notEmpty.validation==true){
-                            if(value==gdrfaValue){
-                                callback(false)
-                                $("#text-error").html("This field should not be equal to the GDRFAFileNUmber value")
-                            }else{
-                                if(entityTypeValue=="Resident" || entityTypeValue=="Investor Visa"){
-                                    var validIdNum=validIdNumFunction(value,13,3)
-                                    if(validIdNum.validation==true){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").html("The selected data field "+validIdNum.message)
-                                    }
-
-                                }else if(entityTypeValue=="UAE Citizen" || entityTypeValue=="GCC Citizen"){
-                                    var uidNumber=uidNumberFunction(value,6,15)
-                                    if(uidNumber.validation==true){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").html("The selected data field "+uidNumber.message)
-                                    }
-                                }else{
-                                    var uidNumber=uidNumberFunction(value,9,11)
-                                    if(uidNumber.validation==true){
-                                        callback(true)
-                                        $("#text-error").html("")
-                                    }else{
-                                        callback(false)
-                                        $("#text-error").html("The selected data field "+uidNumber.message)
-                                    }
-                                }
-                                callback(true)
-                                $("#text-error").html("")
-                            }
-                        }else{
-                            callback(false)
-                            $("#text-error").html("The selected data field "+notEmpty.message)
-                        }
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var UAEnumFormat=function(value,callback){
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    var UAEnumFormat=UAEnumFormatfunction(value)
-                    if(UAEnumFormat.validation==true){
-                        callback(true)
-                        $("#text-error").html("")
-                    }else{
-                        callback(false)
-                        $("#text-error").html("<p>The selected data field "+UAEnumFormat.message+"</p>")
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
-        var validEmailAndMandatory = function (value, callback) {
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                var notEmpty=notEmptyfunction(value)
-                var validEmail=validEmailfunction(value)
-                    if(notEmpty.validation==true && validEmail.validation==true){
-                        callback(true)
-                        $("#text-error").html("")
-                    }else{
-                        callback(false)
-                        $("#text-error").html("<p>The selected data field "+notEmpty.message+validEmail.message+"</p>")
                     }
                 }else{
                     callback(false)
@@ -752,7 +529,6 @@
             colHeaderFromCOR.push("Policy Id #: "+value.master_policy_clover_id)
             if(value.lob=="GROUP HEALTH"){
                 const catInDropDown=categoriesDB.filter(catValue => value.master_policy_clover_id===catValue.master_policy_clover_id).map(catValue => catValue.cat_name)
-                console.log(catInDropDown)
                 columnsFromCOR.push({data: value.master_policy_clover_id,className:'categories', type: 'dropdown', source: catInDropDown,  validator:categoriesValidation ,allowInvalid: true})
 
             }else{
@@ -947,252 +723,84 @@
                             addHealthTempId++;
                             var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
                             var tableHeaderArray=tableHeader.slice(Math.max(updatedData.length - policiesLength, 0))
-                            switch (cor) {
-                                case 'DUBAI':
-                                case 'DUBAI LSB':
-                                    dataArray.dataDB.push({
-                                        company_name: updatedData[0],
-                                        s_department: updatedData[1],
-                                        employee_staff_id: updatedData[2],
-                                        first_name: updatedData[3],
-                                        second_name: updatedData[4],
-                                        last_name: updatedData[5],
-                                        relation: updatedData[6],
-                                        dob: updatedData[7],
-                                        gender: updatedData[8],
-                                        nationality: updatedData[9],
-                                        marital_status: updatedData[10],
-                                        cost_sharing: updatedData[11],
-                                        position: updatedData[12],
-                                        grade: updatedData[13],
-                                        mobile: updatedData[14],
-                                        email: updatedData[15],
-                                        emirates_id: updatedData[16],
-                                        passport_num: updatedData[17],
-                                        uid: updatedData[18],
-                                        gdrfa_file_number: updatedData[19],
-                                        emirate_of_visa_issuance: updatedData[20],
-                                        member_type: updatedData[21],
-                                        entity_type: updatedData[22],
-                                        establishment_id: updatedData[23],
-                                        residential_location: updatedData[24],
-                                        work_location: updatedData[25],
-                                        employees_salary_bracket: updatedData[26],
-                                        commission: updatedData[27],
-                                        entity_contact_number: updatedData[28],
-                                        entity_email_id: updatedData[29],
-                                        client_contact_name: contact.client_contact_name,
-                                        client_contact_id: client_contact_id,
-                                        master_account: master_account,
-                                        cor: cor,
-                                        web_req_id:webReqId,
-                                        Add_health_temp_id:addHealthTempId,
-                                        date:outputDate
-                                    })
-                                break;
-                                case 'AUH':
-                                    dataArray.dataDB.push({
-                                        company_name: updatedData[0],
-                                        s_department: updatedData[1],
-                                        employee_staff_id: updatedData[2],
-                                        first_name: updatedData[3],
-                                        second_name: updatedData[4],
-                                        last_name: updatedData[5],
-                                        relation: updatedData[6],
-                                        dob: updatedData[7],
-                                        gender: updatedData[8],
-                                        nationality: updatedData[9],
-                                        marital_status: updatedData[10],
-                                        cost_sharing: updatedData[11],
-                                        position: updatedData[12],
-                                        grade: updatedData[13],
-                                        mobile: updatedData[14],
-                                        email: updatedData[15],
-                                        emirates_id: updatedData[16],
-                                        passport_num: updatedData[17],
-                                        uid: updatedData[18],
-                                        previously_insured: updatedData[19],
-                                        client_contact_name: contact.client_contact_name,
-                                        client_contact_id: client_contact_id,
-                                        master_account: master_account,
-                                        cor: cor,
-                                        web_req_id:webReqId,
-                                        Add_health_temp_id:addHealthTempId,
-                                        date:outputDate
-                                    })
-                                break;
-                                case 'OTHER EMIRATES':
-                                    dataArray.dataDB.push({
-                                        company_name: updatedData[0],
-                                        s_department: updatedData[1],
-                                        employee_staff_id: updatedData[2],
-                                        first_name: updatedData[3],
-                                        second_name: updatedData[4],
-                                        last_name: updatedData[5],
-                                        relation: updatedData[6],
-                                        dob: updatedData[7],
-                                        gender: updatedData[8],
-                                        nationality: updatedData[9],
-                                        marital_status: updatedData[10],
-                                        cost_sharing: updatedData[11],
-                                        position: updatedData[12],
-                                        grade: updatedData[13],
-                                        mobile: updatedData[14],
-                                        email: updatedData[15],
-                                        emirates_id: updatedData[16],
-                                        passport_num: updatedData[17],
-                                        uid: updatedData[18],
-                                        client_contact_name: contact.client_contact_name,
-                                        client_contact_id: client_contact_id,
-                                        master_account: master_account,
-                                        cor: cor,
-                                        web_req_id:webReqId,
-                                        Add_health_temp_id:addHealthTempId,
-                                        date:outputDate
-                                    })
-                                break;
-                                case 'JORDAN':
-                                    dataArray.dataDB.push({
-                                        company_name: updatedData[0],
-                                        s_department: updatedData[1],
-                                        employee_staff_id: updatedData[2],
-                                        first_name: updatedData[3],
-                                        second_name: updatedData[4],
-                                        last_name: updatedData[5],
-                                        relation: updatedData[6],
-                                        dob: updatedData[7],
-                                        gender: updatedData[8],
-                                        nationality: updatedData[9],
-                                        marital_status: updatedData[10],
-                                        cost_sharing: updatedData[11],
-                                        position: updatedData[12],
-                                        grade: updatedData[13],
-                                        mobile: updatedData[14],
-                                        email: updatedData[15],
-                                        national_id: updatedData[16],
-                                        client_contact_name: contact.client_contact_name,
-                                        client_contact_id: client_contact_id,
-                                        master_account: master_account,
-                                        cor: cor,
-                                        web_req_id:webReqId,
-                                        Add_health_temp_id:addHealthTempId,
-                                        date:outputDate
-                                    })
-                                break;
-                                case 'KSA':
-                                    dataArray.dataDB.push({
-                                        company_name: updatedData[0],
-                                        s_department: updatedData[1],
-                                        employee_staff_id: updatedData[2],
-                                        first_name: updatedData[3],
-                                        second_name: updatedData[4],
-                                        last_name: updatedData[5],
-                                        relation: updatedData[6],
-                                        dob: updatedData[7],
-                                        gender: updatedData[8],
-                                        nationality: updatedData[9],
-                                        marital_status: updatedData[10],
-                                        cost_sharing: updatedData[11],
-                                        position: updatedData[12],
-                                        grade: updatedData[13],
-                                        mobile: updatedData[14],
-                                        email: updatedData[15],
-                                        saudi_id: updatedData[16],
-                                        iqama_id: updatedData[17],
-                                        iqama_expire_at: updatedData[18],
-                                        sponsor_id: updatedData[19],
-                                        client_contact_name: contact.client_contact_name,
-                                        client_contact_id: client_contact_id,
-                                        master_account: master_account,
-                                        cor: cor,
-                                        web_req_id:webReqId,
-                                        Add_health_temp_id:addHealthTempId,
-                                        date:outputDate
-                                    })
-                                break;
-                                case 'KUWAIT':
-                                    dataArray.dataDB.push({
-                                        company_name: updatedData[0],
-                                        s_department: updatedData[1],
-                                        employee_staff_id: updatedData[2],
-                                        first_name: updatedData[3],
-                                        second_name: updatedData[4],
-                                        last_name: updatedData[5],
-                                        relation: updatedData[6],
-                                        dob: updatedData[7],
-                                        gender: updatedData[8],
-                                        nationality: updatedData[9],
-                                        marital_status: updatedData[10],
-                                        cost_sharing: updatedData[11],
-                                        position: updatedData[12],
-                                        grade: updatedData[13],
-                                        mobile: updatedData[14],
-                                        email: updatedData[15],
-                                        kuwait_id : updatedData[16],
-                                        client_contact_name: contact.client_contact_name,
-                                        client_contact_id: client_contact_id,
-                                        master_account: master_account,
-                                        cor: cor,
-                                        web_req_id:webReqId,
-                                        Add_health_temp_id:addHealthTempId,
-                                        date:outputDate
-                                    })
-                                break;
-                                case 'QATAR':
-                                    dataArray.dataDB.push({
-                                        company_name: updatedData[0],
-                                        s_department: updatedData[1],
-                                        employee_staff_id: updatedData[2],
-                                        first_name: updatedData[3],
-                                        second_name: updatedData[4],
-                                        last_name: updatedData[5],
-                                        relation: updatedData[6],
-                                        dob: updatedData[7],
-                                        gender: updatedData[8],
-                                        nationality: updatedData[9],
-                                        marital_status: updatedData[10],
-                                        cost_sharing: updatedData[11],
-                                        position: updatedData[12],
-                                        grade: updatedData[13],
-                                        mobile: updatedData[14],
-                                        email: updatedData[15],
-                                        qatar_id: updatedData[16],
-                                        client_contact_name: contact.client_contact_name,
-                                        client_contact_id: client_contact_id,
-                                        master_account: master_account,
-                                        cor: cor,
-                                        web_req_id:webReqId,
-                                        Add_health_temp_id:addHealthTempId,
-                                        date:outputDate
-                                    })
-                                break;
-                                default:
-                                    dataArray.dataDB.push({
-                                        company_name: updatedData[0],
-                                        s_department: updatedData[1],
-                                        employee_staff_id: updatedData[2],
-                                        first_name: updatedData[3],
-                                        second_name: updatedData[4],
-                                        last_name: updatedData[5],
-                                        relation: updatedData[6],
-                                        dob: updatedData[7],
-                                        gender: updatedData[8],
-                                        nationality: updatedData[9],
-                                        marital_status: updatedData[10],
-                                        cost_sharing: updatedData[11],
-                                        position: updatedData[12],
-                                        grade: updatedData[13],
-                                        mobile: updatedData[14],
-                                        email: updatedData[15],
-                                        client_contact_name: contact.client_contact_name,
-                                        client_contact_id: client_contact_id,
-                                        master_account: master_account,
-                                        cor: cor,
-                                        web_req_id:webReqId,
-                                        Add_health_temp_id:addHealthTempId,
-                                        date:outputDate
-                                    })
+
+                            finalValidData = {
+                                company_name: updatedData[0],
+                                s_department: updatedData[1],
+                                employee_staff_id: updatedData[2],
+                                first_name: updatedData[3],
+                                second_name: updatedData[4],
+                                last_name: updatedData[5],
+                                relation: updatedData[6],
+                                dob: updatedData[7],
+                                gender: updatedData[8],
+                                nationality: updatedData[9],
+                                marital_status: updatedData[10],
+                                cost_sharing: updatedData[11],
+                                position: updatedData[12],
+                                grade: updatedData[13],
+                                mobile: updatedData[14],
+                                email: updatedData[15],
+                                client_contact_name: contact.client_contact_name,
+                                client_contact_id: client_contact_id,
+                                master_account: master_account,
+                                cor: cor,
+                                web_req_id:webReqId,
+                                Add_health_temp_id:addHealthTempId,
+                                date:outputDate
                             }
+                            if(cor=='DUBAI LSB' || cor=='DUBAI'){
+                                finalValidData = {...finalValidData, ...{
+                                    emirates_id: updatedData[16],
+                                    passport_num: updatedData[17],
+                                    uid: updatedData[18],
+                                    gdrfa_file_number: updatedData[19],
+                                    emirate_of_visa_issuance: updatedData[20],
+                                    member_type: updatedData[21],
+                                    entity_type: updatedData[22],
+                                    establishment_id: updatedData[23],
+                                    residential_location: updatedData[24],
+                                    work_location: updatedData[25],
+                                    employees_salary_bracket: updatedData[26],
+                                    commission: updatedData[27],
+                                    entity_contact_number: updatedData[28],
+                                    entity_email_id: updatedData[29]
+                                }}
+                            }else if(cor=='AUH'){
+                                    finalValidData = {...finalValidData, ...{
+                                    emirates_id: updatedData[16],
+                                    passport_num: updatedData[17],
+                                    uid: updatedData[18],
+                                    previously_insured: updatedData[19]
+                                }}
+                                }else if(cor=='OTHER EMIRATES'){
+                                finalValidData = {...finalValidData, ...{
+                                    emirates_id: updatedData[16],
+                                    passport_num: updatedData[17],
+                                    uid: updatedData[18]
+                                }}
+                            }else if(cor=='JORDAN'){
+                                finalValidData = {...finalValidData, ...{
+                                    national_id: updatedData[16]
+                                }}
+                            }else if(cor=='KSA'){
+                                finalValidData = {...finalValidData, ...{
+                                    saudi_id: updatedData[16],
+                                    iqama_id: updatedData[17],
+                                    iqama_expire_at: updatedData[18],
+                                    sponsor_id: updatedData[19]
+                                }}
+                            }else if(cor=='KUWAIT'){
+                                finalValidData = {...finalValidData, ...{
+                                    kuwait_id : updatedData[16]
+                                }}
+                            }else if(cor=='QATAR'){
+                                finalValidData = {...finalValidData, ...{
+                                    qatar_id: updatedData[16]
+                                }}
+                            }
+                            dataArray.dataDB.push(finalValidData)
+
                             tableHeaderArray.forEach(function(headerCont,index){
                                 var category=categoriesArray[index]
                                 dataArray.dataCategories.push({policy_id: headerCont,cat: category,web_req_id:webReqId,Add_health_temp_id:addHealthTempId})
