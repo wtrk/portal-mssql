@@ -46,6 +46,7 @@
             <th>Employee Staff ID</th>
             <th>Card no.</th>
             <th>Full Name</th>
+            <th>Relation</th>
             <th>Date of birth</th>
             <th>Gender</th>
             <th>Nationality</th>
@@ -63,19 +64,20 @@
     <tbody>
         @each(censusEntry in uidData)
         <tr>
-            <td>{{censusEntry.insured_type}}</td>
-            <th>{{censusEntry.company_name}}</th>
-            <th>{{censusEntry.s_department}}</th>
-            <th>{{censusEntry.staff_id}}</th>
-            <th>{{censusEntry.card_number}}</th>
+            <td>{{$loop.index + 1}}</td>
+            <td>{{censusEntry.company_name}}</td>
+            <td>{{censusEntry.s_department}}</td>
+            <td>{{censusEntry.staff_id}}</td>
+            <td>{{censusEntry.cardn}}</td>
             <td>{{censusEntry.first_name}} {{censusEntry.second_name}} {{censusEntry.last_name}}</td>
+            <td>{{censusEntry.relation}}</td>
             <td class="dateFormat">{{censusEntry.dob}}</td>
             <td>{{censusEntry.gender}}</td>
             <td>{{censusEntry.nationality}}</td>
             <td>{{censusEntry.marital_status}}</td>
-            <th>{{censusEntry.cost_sharing}}</th>
-            <th>{{censusEntry.position}}</th>
-            <th>{{censusEntry.grade}}</th>
+            <td>{{censusEntry.cost_sharing}}</td>
+            <td>{{censusEntry.position}}</td>
+            <td>{{censusEntry.grade}}</td>
             <td>{{censusEntry.mobile}}</td>
             <td>{{censusEntry.email}}</td>
 

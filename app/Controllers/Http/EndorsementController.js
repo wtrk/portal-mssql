@@ -1932,11 +1932,11 @@ class EndorsementController {
     let masterPolicyCloverId = masterPolicyCloverIdDb.map((a) => {
       return a.master_policy_clover_id
     });
-      const updatedUidDb = await Database.raw("select distinct top (3000) [a].[master_policy_clover_id], [a].[uid], [a].[cat],a.limit from [Globals_rep].[dbo].[updated_iid_rep] as [a] inner join [Globals_rep].[dbo].[contact_links_tbl_rep] as [b] on [a].[master_policy_clover_id] = [b].[master_policy_clover_id] where [b].[client_contact_id] = "+auth.user.linked_user_id+" and [a].[master_policy_clover_id] in ("+masterPolicyCloverId.map(e=>"'"+e+"'")+") order by [a].[uid] desc")
-      console.log(updatedUidDb)
+      const updatedUidDb = await Database.raw("select distinct [a].[master_policy_clover_id], [a].[uid], [a].[cat],a.limit from [Globals_rep].[dbo].[updated_iid_rep] as [a] inner join [Globals_rep].[dbo].[contact_links_tbl_rep] as [b] on [a].[master_policy_clover_id] = [b].[master_policy_clover_id] where [b].[client_contact_id] = "+auth.user.linked_user_id+" and [a].[master_policy_clover_id] in ("+masterPolicyCloverId.map(e=>"'"+e+"'")+") order by [a].[uid] desc")
+      
       let distinctUid = [...new Set(updatedUidDb.map(e=>e.uid))];
 
-      const uidData = await Database.raw("select a.*,company_name,s_department,staff_id,card_number,cost_sharing,position,grade from [Globals_rep].[dbo].[UID_rep] a,[Globals_rep].[dbo].updated_iid_rep b where a.uid = b.uid and b.[uid] in ("+distinctUid.map(e=>"'"+e+"'")+")")
+      const uidData = await Database.raw("select distinct a.first_name, a.last_name,a.dob,a.gender,a.nationality,a.marital_status,a.mobile,a.email,a.uid,relation, (select top 1 card_number from [Globals_rep].[dbo].updated_iid_rep c where c.uid=b.uid and c.staff_id=b.staff_id and card_number <> '') cardn,company_name,s_department,staff_id,cost_sharing,position,grade from [Globals_rep].[dbo].[UID_rep] a,[Globals_rep].[dbo].updated_iid_rep b where a.uid = b.uid and b.[uid] in ("+distinctUid.map(e=>"'"+e+"'")+")")
 
     return view.render("endorsement/census_list", {
       uidData: uidData,
