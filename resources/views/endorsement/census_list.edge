@@ -69,7 +69,7 @@
             <td>{{censusEntry.s_department}}</td>
             <td>{{censusEntry.staff_id}}</td>
             <td>{{censusEntry.cardn}}</td>
-            <td>{{censusEntry.first_name}} {{censusEntry.second_name}} {{censusEntry.last_name}}</td>
+            <td>{{censusEntry.first_name}} {{censusEntry.second_name || ""}} {{censusEntry.last_name}}</td>
             <td>{{censusEntry.relation}}</td>
             <td class="dateFormat">{{censusEntry.dob}}</td>
             <td>{{censusEntry.gender}}</td>
@@ -89,7 +89,7 @@
                 {{updatedUid.limit ? updatedUid.limit : updatedUid.cat}}
                 @endif
                 @endeach
-            </td>
+            </td>  
             @endeach
         </tr>
         @endeach
@@ -108,20 +108,7 @@
         $("#datatables").removeAttr('width').DataTable({
             dom: 'Bfrtip',
             scrollX: true,
-            autoWidth: false,fixedColumns: true,
-            // columns: [
-            //     { "width": 100},
-            //     { "width": 200},
-            //     { "width": 100},
-            //     { "width": 70},
-            //     { "width": 100},
-            //     { "width": 70},
-            //     { "width": 150},
-            //     { "width": 150},
-            //     { "width": 150},
-            //     { "width": 150},
-            //     { "width": 150}
-            // ],
+            autoWidth: false,fixedColumns: true
             buttons: [
                 { 
                     extend: 'excel', 

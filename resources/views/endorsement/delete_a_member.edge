@@ -172,11 +172,12 @@
         });
         $("#smartwizard-arrows-primary").smartWizard({
             selected:0,
-          theme: "arrows",
-          showStepURLhash: false,
-          transitionEffect:'slide',
-          toolbarSettings: {
-            toolbarPosition: 'none', // none, top, bottom, both
+            theme: "arrows",
+            showStepURLhash: false,
+            transitionEffect:'slide',
+            keyNavigation: false,
+            toolbarSettings: {
+                toolbarPosition: 'none', // none, top, bottom, both
             },
         });
         var btnFinish = $('<button></button>').text('Finish')

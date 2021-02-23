@@ -5,6 +5,10 @@ var notEmpty = (value, callback) => {
   return $("#text-error").html(resNotEmpty.message)
 };
 var employeeStaffId = (value, callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
   var resNotEmpty = notEmptyfunction(value)
   if (!resNotEmpty.valid) {
     callback(resNotEmpty.valid)
@@ -16,6 +20,10 @@ var employeeStaffId = (value, callback) => {
   }
 }
 var namesValidation = (value, callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
   var resNotEmpty = notEmptyfunction(value)
   var resMin2 = minLengthfunction(value, 2)
   if (!resNotEmpty.valid) {
@@ -31,6 +39,10 @@ var namesValidation = (value, callback) => {
   }
 }
 var min2ifNotEmpty = (value, callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
   var resNotEmpty = notEmptyfunction(value)
   var resMin2 = minLengthfunction(value, 2)
   if (!resNotEmpty.valid) {
@@ -47,6 +59,10 @@ var min2ifNotEmpty = (value, callback) => {
 };
 var acceptableDate = (value = "", callback) => {
 
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
   var resNotEmpty = notEmptyfunction(value)
   if (!resNotEmpty.valid) {
     callback(resNotEmpty.valid)
@@ -72,68 +88,156 @@ var acceptableDate = (value = "", callback) => {
     }
   }
 }
-var positionField = (value, callback) => {
-  if (relationValue == "1= PRINCIPAL" && nationalityValue == "Kingdom Of Saudi Arabia") {
-    notEmpty(value, callback)
-  } else {
-    var resNotEmpty = notEmptyfunction(value)
-    var resMin3 = minLengthfunction(value, 3)
-
-    if (!resNotEmpty.valid) {
-      callback(!resNotEmpty.valid)
-      return $("#text-error").html("")
-    } else if (!resMin3.valid) {
-      callback(resMin3.valid)
-      return $("#text-error").html(resMin3.message)
+var positionValidation = (value, callback) => {
+  
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
+  if(relationValue == "1= PRINCIPAL"){
+    if (nationalityValue == "Kingdom Of Saudi Arabia") {
+      if(!value){
+        callback(false)
+        return $("#text-error").html("This field is mandatory")
+      }
     } else {
-      callback(true)
-      $("#text-error").text("")
+      var resMin3 = minLengthfunction(value, 3)
+      if(value){
+        if (!resMin3.valid) {
+          callback(resMin3.valid)
+          return $("#text-error").html(resMin3.message)
+        }
+      }
+    }
+  }else{
+    if(value){
+      callback(false)
+      return $("#text-error").html("This field should be empty for dependents")
     }
   }
+  callback(true)
+  return $("#text-error").html("")
 }
-var alphaNumericIfNotEmpty = (value, callback) => {
-  var resNotEmpty = notEmptyfunction(value)
-  if (!resNotEmpty.valid) {
-    callback(resNotEmpty.valid)
-    return $("#text-error").html(resNotEmpty.message)
-  } else {
-    var resAlphaNumeric = alphaNumericfunction(value)
-    callback(resAlphaNumeric.valid)
-    return $("#text-error").html(resAlphaNumeric.message)
+
+var emailValidation = (value, callback) => {
+  
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
   }
+  if(addHealthTempsData.map(e=>e.email).includes(value)){
+    callback(false)
+    return $("#text-error").html("Email address already exists")
+  }
+  if(relationValue == "1= PRINCIPAL"){
+    var resValidEmail = validEmailfunction(value)
+    callback(resValidEmail.valid)
+    return $("#text-error").html(resValidEmail.message)
+  }else{
+    if(value){
+      callback(false)
+      return $("#text-error").html("This field should be empty for dependents")
+    }
+  }
+  callback(true)
+  return $("#text-error").html("")
 }
-var phoneNumberIfPrincipal = (value, callback) => {
-  var resNotEmpty = notEmptyfunction(value)
-  if (resNotEmpty.valid) {
+
+var phoneNumberValidation = (value, callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
+  if(addHealthTempsData.map(e=>e.mobile).includes(value)){
+    callback(false)
+    return $("#text-error").html("Mobile Number already exists")
+  }
+  if(relationValue == "1= PRINCIPAL"){
     var resValidPhone = validPhoneFunction(value)
     //callback(resValidPhone.valid)
     callback(true)
     return $("#text-error").html(resValidPhone.message)
+  }else{
+    if(value){
+      callback(false)
+      return $("#text-error").html("This field should be empty for dependents")
+    }
+  }
+  callback(true)
+  return $("#text-error").html("")
+}
+var uidValidation=function(value,callback){
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
+  console.log(addHealthTempsData)
+    if(addHealthTempsData.map(e=>e.uid).includes(value)){
+        callback(false)
+        return $("#text-error").html("UID already exists")
+    }
 
-  } else if (!resNotEmpty.valid && relationValue == "1= PRINCIPAL") {
-    callback(resNotEmpty.valid)
-    return $("#text-error").html(resNotEmpty.message)
-  } else {
-    callback(true)
-    return $("#text-error").html("")
+    if(value){
+        var uidNumber=uidNumberFunction(value,6,15)
+        if(uidNumber.validation==true){
+            callback(true)
+            $("#text-error").html("")
+        }else{
+            callback(false)
+            $("#text-error").html("The selected data field "+uidNumber.message)
+        }
+    }else{
+        callback(false)
+        $("#text-error").html("This field is mandatory")
+    }
+}
+
+var passportNumValidation=function(value,callback){
+  if(emptyRow){
+      callback(true)
+      return $("#text-error").html("")
+  }
+  if(addHealthTempsData.map(e=>e.passport_num).includes(value)){
+    callback(false)
+    return $("#text-error").html("Passport Number already exists")
+  }
+  if(value){
+      var distinctNumber=distinctNumberFunction(value)
+      if(distinctNumber.validation==true){
+          callback(true)
+          $("#text-error").html("")
+      }else{
+          callback(false)
+          $("#text-error").html("The selected data field "+distinctNumber.message)
+      }
+  }else{
+      callback(false)
+      $("#text-error").html("This field is mandatory")
   }
 }
-var validEmailIfPrinciple = (value, callback) => {
-  var resNotEmpty = notEmptyfunction(value)
-  if (resNotEmpty.valid) {
-    var resValidEmail = validEmailfunction(value)
-    callback(resValidEmail.valid)
-    return $("#text-error").html(resValidEmail.message)
-
-  } else if (!resNotEmpty.valid && relationValue == "1= PRINCIPAL") {
-    callback(resNotEmpty.valid)
-    return $("#text-error").html(resNotEmpty.message)
-  } else {
-    callback(true)
-    return $("#text-error").html("")
+var gradeValidation = (value, callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
   }
+  if(relationValue == "1= PRINCIPAL"){
+    var resAlphaNumeric = alphaNumericfunction(value)
+    callback(resAlphaNumeric.valid)
+    return $("#text-error").html(resAlphaNumeric.message)
+  }else{
+    if(value){
+      callback(false)
+      return $("#text-error").html("This field should be empty for dependents")
+    }
+  }
+  callback(true)
+  return $("#text-error").html("")
 }
 var entityTypesValidation = (value, callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
   var resNotEmpty = notEmptyfunction(value)
   if (resNotEmpty.valid) {
     if(nationalityValue=="United Arab Emirates"){
@@ -154,6 +258,10 @@ var entityTypesValidation = (value, callback) => {
   }
 }
 var validEmailAndMandatory = (value, callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
   var resNotEmpty = notEmptyfunction(value)
   if (resNotEmpty.valid) {
     var validEmail=validEmailfunction(value)
@@ -165,6 +273,10 @@ var validEmailAndMandatory = (value, callback) => {
   }
 }
 var memberTypesValidation = (value, callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
   const timestampFromValue=Date.parse(ageValue);
   const currentTimestamp=Date.now()
   const agePerDays=Math.floor((currentTimestamp-timestampFromValue) / (24 * 60 * 60 * 1000));
@@ -218,6 +330,10 @@ var memberTypesValidation = (value, callback) => {
 
 }
 var UAEnumFormat = (value, callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
   var resNotEmpty = notEmptyfunction(value)
   if (resNotEmpty.valid) {
     /// commented waiting to buy the license
@@ -242,6 +358,15 @@ var UAEnumFormat = (value, callback) => {
   callback(true)
 }
 var emiratesIdNumber=(value,callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
+  if(addHealthTempsData.map(e=>e.emirates_id).includes(value)){
+    callback(false)
+    return $("#text-error").html("Emirates ID already exists")
+  }
+
   var resNotEmpty = notEmptyfunction(value)
   if(resNotEmpty.valid){
       var validIdNum=validIdNumFunction(value,18,3)
@@ -258,6 +383,10 @@ var emiratesIdNumber=(value,callback) => {
   }
 }
 var estIdValidation=(value,callback) => {
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
         var resNotEmpty=notEmptyfunction(value)
         if(resNotEmpty.valid){
           if(value==gdrfaValue){
@@ -309,7 +438,28 @@ var estIdValidation=(value,callback) => {
         }
 
 }
+var categoriesValidation= function(value, callback){
+  if(emptyRow){
+    callback(true);
+    return $("#text-error").html("");
+  }
+  let indexesWithoutCat=15
+  if(cor=='DUBAI' || cor=='DUBAI LSB') indexesWithoutCat=29
+  else if(cor=='AUH'|| cor=='KSA') indexesWithoutCat=19
+  else if(cor=='OTHER EMIRATES') indexesWithoutCat=18
+  else if(cor=='JORDAN'|| cor=='KUWAIT'|| cor=='QATAR') indexesWithoutCat=16
+  
+  let policiesArray=rowMetaData ? rowMetaData.filter((e,i)=>i>indexesWithoutCat):[]
 
+  let catNotEmpty=policiesArray.some(e=>e!==null && e!=="")
+  if(catNotEmpty===true){
+    callback(true)
+    $("#text-error").html("")
+  }else{
+    callback(false)
+    $("#text-error").html("You should enter at least 1 category")
+  }
+}
 
 
 //HOT Validations Function --START--
@@ -322,7 +472,7 @@ function notEmptyfunction(value) {
 function minLengthfunction(value, length) {
   return {
     valid: (String(value).length >= length) ? true : false,
-    message: (String(value).length >= length) ? "" : "Must be at least " + length + " characters."
+    message: (String(value).length >= length) ? "" : "This field must have at least " + length + " characters."
   }
 }
 function lettersSpacesfunction(value) {

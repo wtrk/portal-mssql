@@ -131,7 +131,7 @@
                 }
             }
         }
-        var uidNumbers=function(value,callback){
+        var uidValidation=function(value,callback){
             if(emptyRow){
                 callback(true)
                 $("#text-error").html("")
@@ -381,20 +381,6 @@
                 }
             }
         }
-        var categoriesValidation= function(value, callback){
-            if(emptyRow || value){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(categoriesValidator==true){
-                    callback(true)
-                    $("#text-error").html("")
-                }else{
-                    callback(false)
-                    $("#text-error").html("You should enter at least 1 category")
-                }
-            }
-        }
         columnsValidations=[]
         HOTcols.forEach((entry,index) => {
             switch(entry.data) {
@@ -406,14 +392,14 @@
                 case "DOB": entry['validator']=acceptableDate; break;
                 case "Nationality": entry['validator']=nationalities; break;
                 case "Marital Status": entry['validator']=statusValidation; break;
-                case "Position": entry['validator']=positionField; break;
-                case "Grade": entry['validator']=alphaNumericIfNotEmpty; break;
-                case "Mobile No": entry['validator']=phoneNumberIfPrincipal; break;
-                case "E-mail": entry['validator']=validEmailIfPrinciple; break;
+                case "Position": entry['validator']=positionValidation; break;
+                case "Grade": entry['validator']=gradeValidation; break;
+                case "Mobile No": entry['validator']=phoneNumberValidation; break;
+                case "E-mail": entry['validator']=emailValidation; break;
                 case "NATIONAL ID": entry['validator']=nationalIdValidation; break;
                 case "EMIRATES ID NO.": entry['validator']=emiratesIdNumber; break;
                 case "PASSPORT NO.": entry['validator']=distinctNumbers; break;
-                case "UID": entry['validator']=uidNumbers; break;
+                case "UID": entry['validator']=uidValidation; break;
                 case "GDRFAFileNumber": entry['validator']=gdrfaFileNumber; break;
                 case "EMIRATE OF VISA ISSUANCE": entry['validator']=notEmpty; break;
                 case "MEMBER TYPE": entry['validator']=memberTypesValidation; break;

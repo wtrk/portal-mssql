@@ -1113,72 +1113,35 @@ class EndorsementController {
   async addAMember1({ view, auth, request, response, session }) {
     const master_account = request.body.master_account;
     const cor = request.body.cor;
-    let dataToInsert = [];
-    if (request.body.dataToInsert) {
-      dataToInsert = request.body.dataToInsert;
-    }
-    const contact = await Database.table(
-      "Globals_rep.dbo.client_contact_details_rep"
-    )
-      .where("client_contact_id", auth.user.linked_user_id)
-      .distinct("client_contact_name")
-      .first();
+    let dataToInsert = request.body.dataToInsert ? request.body.dataToInsert : [];
+    
+    const contact = await Database.table("Globals_rep.dbo.client_contact_details_rep")
+      .where("client_contact_id", auth.user.linked_user_id).distinct("client_contact_name").first();
 
     const rejectedPolicyId = session.get("rejected_policyId");
     let policiesDB = [];
     let policyQuery = await Database.raw("select distinct [a] .* from [Globals_rep].[dbo].[policies_rep] as [a] inner join [Globals_rep].[dbo].[contact_links_tbl_rep] as [b] on [a].[master_policy_clover_id] = [b].[master_policy_clover_id] where [b].[client_contact_id] = "+auth.user.linked_user_id+" and [a].[cor] = '"+cor+"'")
 
-    if (rejectedPolicyId === null) {
-      policiesDB = await policyQuery;
-    } else {
-      policiesDB = await policyQuery.where(
-        "a.master_policy_clover_id",
-        rejectedPolicyId
-      );
-    }
+    if (rejectedPolicyId === null) policiesDB = policyQuery;
+    else policiesDB = policyQuery.where("a.master_policy_clover_id", rejectedPolicyId);
 
-    let policies = policiesDB.map((a) => {
-      return a.master_policy_clover_id;
-    });
-    const webReqIdDb = await Database.select("web_req_id")
-      .from("add_health_temps")
-      .orderBy("web_req_id", "desc")
-      .first();
-
-    const webReqIdDbError = await Database.select("web_req_id")
-      .from("add_health_temp_errors")
-      .orderBy("web_req_id", "desc")
-      .first();
+    let policies = policiesDB.map((a) => a.master_policy_clover_id);
+    const addHealthTempsData = await Database.table("add_health_temps").orderBy("web_req_id", "desc")
+    const addHealthTempsErrorData = await Database.table("add_health_temp_errors").orderBy("web_req_id", "desc")
 
     let webReqNum = 0;
-    if (webReqIdDb && webReqIdDbError) {
-      webReqNum =
-        webReqIdDb["web_req_id"] > webReqIdDbError["web_req_id"]
-          ? webReqIdDb["web_req_id"]
-          : webReqIdDbError["web_req_id"];
-    } else if (webReqIdDb) {
-      webReqNum = webReqIdDb["web_req_id"];
-    } else if (webReqIdDbError) {
-      webReqNum = webReqIdDbError["web_req_id"];
-    } else {
-      webReqNum = 0;
-    }
+    addHealthTempsData.forEach(e=>webReqNum=(e.web_req_id > webReqNum) ? e.web_req_id : webReqNum)
+    addHealthTempsErrorData.forEach(e=>webReqNum=(e.web_req_id > webReqNum) ? e.web_req_id : webReqNum)
     const webReqId = webReqNum + 1;
     session.put("webReqId", webReqId);
 
-    const companyNameDB = await Database.from(
-      "Globals_rep.dbo.contact_links_tbl_rep"
-    )
-      .where("client_contact_id", auth.user.linked_user_id)
-      .distinct("client_cr_name");
+    const companyNameDB = await Database.from("Globals_rep.dbo.contact_links_tbl_rep").where("client_contact_id", auth.user.linked_user_id).distinct("client_cr_name");
     let companyName = companyNameDB.map((a) => a.client_cr_name);
 
-    const emiratesDB = await Database.from("Globals_rep.dbo.Emirates_rep");
-    let emirates = emiratesDB.map((a) => a.name);
+    //const emiratesDB = await Database.from("Globals_rep.dbo.Emirates_rep");
+    let emirates = ["Abu Dhabi", "Dubai", "Ajman", "Fujairah", "Ras al Khaimah", "Sharjah", "Umm al Quwain"];
 
-    const nationalitiesDB = await Database.from("countries").distinct(
-      "country_enName"
-    );
+    const nationalitiesDB = await Database.from("countries").distinct("country_enName");
     let nationalities = nationalitiesDB.map((a) => a.country_enName);
 
     const memberTypesDB = await Database.from("member_types");
@@ -1187,60 +1150,23 @@ class EndorsementController {
     const entityTypesDB = await Database.from("entity_types");
     let entityTypes = entityTypesDB.map((a) => a.name_to_db);
 
-    const establishmentIdsDB = await Database.from(
-      "establishment_ids"
-    ).distinct("name");
+    const establishmentIdsDB = await Database.from("establishment_ids").distinct("name");
     let establishmentIds = establishmentIdsDB.map((a) => a.name);
 
-    const residentialLocationsDB = await Database.from(
-      "residential_locations"
-    ).distinct("name");
+    const residentialLocationsDB = await Database.from("residential_locations").distinct("name");
     let residentialLocations = residentialLocationsDB.map((a) => a.name);
 
-    const workLocationsDB = await Database.from("work_locations").distinct(
-      "name"
-    );
+    const workLocationsDB = await Database.from("work_locations").distinct("name");
     let workLocations = workLocationsDB.map((a) => a.name);
 
-    const employeesSalaryBracketsDB = await Database.from(
-      "employees_salary_brackets"
-    ).distinct("name");
+    const employeesSalaryBracketsDB = await Database.from("employees_salary_brackets").distinct("name");
     let employeesSalaryBrackets = employeesSalaryBracketsDB.map((a) => a.name);
-
-    // const categoriesDB = await Database.from(
-    //   "Globals_rep.dbo.policies_cats_rep as a"
-    // )
-    //   .innerJoin("Globals_rep.dbo.contact_links_tbl_rep as b", function () {
-    //     this.on("a.master_policy_clover_id", "b.master_policy_clover_id");
-    //   })
-    //   .where("b.client_contact_id", auth.user.linked_user_id)
-    //   .where("a.based_on_limit", "No")
-    //   .whereIn("a.master_policy_clover_id", policies).debug(true)
+    
     const categoriesDB = await Database.raw("select distinct  [a] . * from [Globals_rep].[dbo].[policies_cats_rep] as [a] inner join [Globals_rep].[dbo].[contact_links_tbl_rep] as [b] on [a].[master_policy_clover_id] = [b].[master_policy_clover_id] where [b].[client_contact_id] = "+auth.user.linked_user_id+" and [a].[master_policy_clover_id] in ("+policies.map(e=>"'"+e+"'")+") and [a].[based_on_limit] = 'No'")
 
-
     let categories = categoriesDB.map((a) => a.cat_name);
-
-    // const catBasedOnLimit = await Database.select(
-    //   "a.id",
-    //   "a.master_policy_clover_id",
-    //   "a.cat_name",
-    //   "a.limit_from",
-    //   "a.limit_to",
-    //   "a.based_on_limit",
-    //   "b.client_cr_id",
-    //   "b.client_cr_name",
-    //   "b.client_contact_id"
-    // )
-    //   .from("Globals_rep.dbo.policies_cats_rep as a")
-    //   .innerJoin("Globals_rep.dbo.contact_links_tbl_rep as b", function () {
-    //     this.on("a.master_policy_clover_id", "b.master_policy_clover_id");
-    //   })
-    //   .where("b.client_contact_id", auth.user.linked_user_id)
-    //   .whereIn("a.master_policy_clover_id", policies)
-    //   .where("a.based_on_limit", "Yes").debug(true);
-      
-      const catBasedOnLimit = await Database.raw("select distinct  [a] . * from [Globals_rep].[dbo].[policies_cats_rep] as [a] inner join [Globals_rep].[dbo].[contact_links_tbl_rep] as [b] on [a].[master_policy_clover_id] = [b].[master_policy_clover_id] where [b].[client_contact_id] = "+auth.user.linked_user_id+" and [a].[master_policy_clover_id] in ("+policies.map(e=>"'"+e+"'")+") and [a].[based_on_limit] = 'Yes'")
+    
+    const catBasedOnLimit = await Database.raw("select distinct  [a] . * from [Globals_rep].[dbo].[policies_cats_rep] as [a] inner join [Globals_rep].[dbo].[contact_links_tbl_rep] as [b] on [a].[master_policy_clover_id] = [b].[master_policy_clover_id] where [b].[client_contact_id] = "+auth.user.linked_user_id+" and [a].[master_policy_clover_id] in ("+policies.map(e=>"'"+e+"'")+") and [a].[based_on_limit] = 'Yes'")
 
     return view.render("endorsement/add_a_member_1", {
       companyName: companyName,
@@ -1262,6 +1188,7 @@ class EndorsementController {
       categoriesDB:categoriesDB,
       catBasedOnLimit: catBasedOnLimit,
       dataToInsert: dataToInsert,
+      addHealthTempsData:addHealthTempsData
     });
   }
   async addAMember2({ view, request, session, auth }) {
@@ -1933,12 +1860,13 @@ class EndorsementController {
       return a.master_policy_clover_id
     });
       const updatedUidDb = await Database.raw("select distinct [a].[master_policy_clover_id], [a].[uid], [a].[cat],a.limit from [Globals_rep].[dbo].[updated_iid_rep] as [a] inner join [Globals_rep].[dbo].[contact_links_tbl_rep] as [b] on [a].[master_policy_clover_id] = [b].[master_policy_clover_id] where [b].[client_contact_id] = "+auth.user.linked_user_id+" and [a].[master_policy_clover_id] in ("+masterPolicyCloverId.map(e=>"'"+e+"'")+") order by [a].[uid] desc")
-      
+     
       let distinctUid = [...new Set(updatedUidDb.map(e=>e.uid))];
-
-      const uidData = await Database.raw("select distinct a.first_name, a.last_name,a.dob,a.gender,a.nationality,a.marital_status,a.mobile,a.email,a.uid,relation, (select top 1 card_number from [Globals_rep].[dbo].updated_iid_rep c where c.uid=b.uid and c.staff_id=b.staff_id and card_number <> '') cardn,company_name,s_department,staff_id,cost_sharing,position,grade from [Globals_rep].[dbo].[UID_rep] a,[Globals_rep].[dbo].updated_iid_rep b where a.uid = b.uid and b.[uid] in ("+distinctUid.map(e=>"'"+e+"'")+")")
-
-    return view.render("endorsement/census_list", {
+ 
+      
+       const uidData = await Database.raw("select distinct a.first_name, a.last_name,a.dob,a.gender,a.nationality,a.marital_status,a.mobile,a.email,a.uid,relation, (select top 1 card_number from [Globals_rep].[dbo].updated_iid_rep c where c.uid=a.uid and c.staff_id=a.staff_id and card_number <> '') cardn, company_name,s_department,staff_id,cost_sharing,position,grade from [Globals_rep].[dbo].updated_iid_rep a where  a.[uid] in ("+distinctUid.map(e=>"'"+e+"'")+") order by company_name, staff_id, relation")
+       //return console.log("uidData",uidData)
+       return view.render("endorsement/census_list", {
       uidData: uidData,
       policiesDb: masterPolicyCloverIdDb,
       updatedUidDb: updatedUidDb,

@@ -94,8 +94,8 @@
 
 
 <script>
-    var categoriesValidator=false, relationValue=null, nationalityValue=null, ageValue=null, uaeVisaIssuanceValue=null, memberTypeValue=null, gdrfaValue=null, entityTypeValue=null,emptyRow=true
-    
+    var rowMetaData=null, relationValue=null, nationalityValue=null, ageValue=null, uaeVisaIssuanceValue=null, memberTypeValue=null, gdrfaValue=null, entityTypeValue=null,emptyRow=true
+    let addHealthTempsData={{{ toJSON(addHealthTempsData) }}} //Used in validation (hot-functions.js)
     $(document).ready(function() {
         $("#datatables-reponsive").DataTable({
             "scrollX": true
@@ -120,14 +120,13 @@
         cor={{{ toJSON(cor) }}},
         webReqId={{{ webReqId }}},
         policies={{{ toJSON(policies) }}}
-        var errorMsg=[],categoriesFilled=[]
+        var errorMsg=[]
         let validLimits=""
         //Validations done: dropdown, notEmpty, email, minimum length 2, if filled min length
         if(dataToInsert.DOB){
             dataToInsert.DOB=moment(dataToInsert.DOB,"MMM DD YYYY hh:mm a").format("DD/MM/YYYY")
         }
         var distinctNumbers=function(value,callback){
-            
             if(emptyRow){
                 callback(true)
                 $("#text-error").html("")
@@ -147,26 +146,7 @@
                 }
             }
         }
-        var uidNumbers=function(value,callback){
-            if(emptyRow){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(value){
-                    var uidNumber=uidNumberFunction(value,6,15)
-                    if(uidNumber.validation==true){
-                        callback(true)
-                        $("#text-error").html("")
-                    }else{
-                        callback(false)
-                        $("#text-error").html("The selected data field "+uidNumber.message)
-                    }
-                }else{
-                    callback(false)
-                    $("#text-error").html("This field is mandatory")
-                }
-            }
-        }
+        
         var gdrfaFileNumber=function(value,callback){
             if(emptyRow){
                 callback(true)
@@ -397,20 +377,6 @@
                 }
             }
         }
-        var categoriesValidation= function(value, callback){
-            if(emptyRow || value){
-                callback(true)
-                $("#text-error").html("")
-            }else{
-                if(categoriesValidator==true){
-                    callback(true)
-                    $("#text-error").html("")
-                }else{
-                    callback(false)
-                    $("#text-error").html("You should enter at least 1 category")
-                }
-            }
-        }
         cor = cor.toUpperCase()
         //var invalidCount
         let colHeaderFromCOR=[
@@ -443,10 +409,10 @@
            {data: "Nationality", type: 'dropdown', source: nationalities ,allowInvalid: true},
            {data: "Marital Status", type: 'dropdown', source: ["1= SINGLE","2= MARRIED","3= DIVORCED"], validator:statusValidation ,allowInvalid: true},
            {data: "Cost Sharing", type: 'dropdown', source: ["CO-NIL","CO-NSSF"] ,allowInvalid: true},
-           {data: "Position", type: "text", validator:positionField ,allowInvalid: true},
-           {data: "Grade", type: "text", validator:alphaNumericIfNotEmpty ,allowInvalid: true},
-           {data: "Mobile No", type: "text", validator:phoneNumberIfPrincipal ,allowInvalid: true},
-           {data: "E-mail", type: "text", validator:validEmailIfPrinciple ,allowInvalid: true},
+           {data: "Position", type: "text", validator:positionValidation ,allowInvalid: true},
+           {data: "Grade", type: "text", validator:gradeValidation ,allowInvalid: true},
+           {data: "Mobile No", type: "text", validator:phoneNumberValidation ,allowInvalid: true},
+           {data: "E-mail", type: "text", validator:emailValidation ,allowInvalid: true},
         
         ]
         if(cor=='DUBAI' || cor=='DUBAI LSB'){
@@ -468,8 +434,8 @@
 
             columnsFromCOR.push(
                 {data: "EMIRATES ID NO.", type: "text", validator:emiratesIdNumber ,allowInvalid: true},
-                {data: "PASSPORT NO.", type: "text", validator:distinctNumbers ,allowInvalid: true},
-                {data: "UID", type: "text", validator:uidNumbers ,allowInvalid: true},
+                {data: "PASSPORT NO.", type: "text", validator:passportNumValidation ,allowInvalid: true},
+                {data: "UID", type: "text", validator:uidValidation ,allowInvalid: true},
                 {data: "GDRFAFileNumber", type: "text", validator:gdrfaFileNumber ,allowInvalid: true},
                 {data: "EMIRATE OF VISA ISSUANCE", type: 'dropdown', source:emirates, validator:notEmpty ,allowInvalid: true},
                 {data: "MEMBER TYPE", type: 'dropdown', source: memberTypes, validator:memberTypesValidation ,allowInvalid: true},
@@ -490,8 +456,8 @@
                 "Has the member been previously insured?")
             columnsFromCOR.push(
                 {data: "EMIRATES ID NO.", type: "text", validator:emiratesIdNumber ,allowInvalid: true},
-                {data: "PASSPORT NO.", type: "text", validator:distinctNumbers ,allowInvalid: true},
-                {data: "UID", type: "text", validator:uidNumbers ,allowInvalid: true},
+                {data: "PASSPORT NO.", type: "text", validator:passportNumValidation ,allowInvalid: true},
+                {data: "UID", type: "text", validator:uidValidation ,allowInvalid: true},
                 {data: "Has the member been previously insured?", type: 'dropdown', source: ["Yes","No"]})
         }else if(cor=='OTHER EMIRATES'){
             colHeaderFromCOR.push(
@@ -500,8 +466,8 @@
                 "UID")
             columnsFromCOR.push(
                 {data: "EMIRATES ID NO.", type: "text", validator:emiratesIdNumber ,allowInvalid: true},
-                {data: "PASSPORT NO.", type: "text", validator:distinctNumbers ,allowInvalid: true},
-                {data: "UID", type: "text", validator:uidNumbers ,allowInvalid: true},
+                {data: "PASSPORT NO.", type: "text", validator:passportNumValidation ,allowInvalid: true},
+                {data: "UID", type: "text", validator:uidValidation ,allowInvalid: true},
             )
         }else if(cor=='JORDAN'){
             colHeaderFromCOR.push("NATIONAL ID")
@@ -567,48 +533,47 @@
         
         hot.addHook('afterChange', function(change, source) {
             validLimits=""
-            $.each( catBasedOnLimit, function( i, cats ) {
-            change.forEach(function(e){
-                if(e[1]===cats['master_policy_clover_id']){
-                    const limit_from=cats.limit_from
-                    const limit_to=cats.limit_to
-                    if(e[3]>=limit_from && e[3]>=limit_to){
-                        validLimits = "Policy #: "+ e[1] +" should be between "+ limit_from +" and "+ limit_to
-                    }
-                }
-            })
+            // $.each( catBasedOnLimit, function( i, cats ) {
+            // change.forEach(function(e){
+            //     console.log(e)
+            //     if(e[1]===cats['master_policy_clover_id']){
+            //         const limit_from=cats.limit_from
+            //         const limit_to=cats.limit_to
+            //         if(e[3]>=limit_from && e[3]>=limit_to){
+            //             validLimits = "Policy #: "+ e[1] +" should be between "+ limit_from +" and "+ limit_to
+            //         }
+            //     }
+            // })
         
-            })  
+            // })  
+            
             var tableData = hot.getData();
-                var tableRow = tableData.length-1;
-                relationValue=hot.getDataAtCell(change[0][0],6)
-                nationalityValue=hot.getDataAtCell(change[0][0],9)
-                ageValue=hot.getDataAtCell(change[0][0],7)
-                gdrfaValue=hot.getDataAtCell(change[0][0],19)
-                uaeVisaIssuanceValue=hot.getDataAtCell(change[0][0],20)
-                memberTypeValue=hot.getDataAtCell(change[0][0],21)
-                entityTypeValue=hot.getDataAtCell(change[0][0],22)
-
-                if(change[0][1]=="Relation"){
-                    if(relationValue=="2= SPOUSE" || relationValue=="3= CHILD"){
-                        hot.setCellMeta(change[0][0],12, 'readOnly', true)
-                        hot.setCellMeta(change[0][0],13, 'readOnly', true)
-                        hot.setCellMeta(change[0][0],12, 'className', "htDisabled")
-                        hot.setCellMeta(change[0][0],13, 'className', "htDisabled")
-                        hot.setDataAtCell(change[0][0],12,"");
-                        hot.setDataAtCell(change[0][0],13,"");
-                    }else if(relationValue=="1= PRINCIPAL"){
-                        hot.setCellMeta(change[0][0],12, 'readOnly', false)
-                        hot.setCellMeta(change[0][0],13, 'readOnly', false)
-                        hot.setCellMeta(change[0][0],12, 'className', "")
-                        hot.setCellMeta(change[0][0],13, 'className', "")
-                        hot.setDataAtCell(change[0][0],12,"");
-                        hot.setDataAtCell(change[0][0],13,"");
-                    }
+            var tableRow = tableData.length-1;
+            nationalityValue=hot.getDataAtCell(change[0][0],9)
+            ageValue=hot.getDataAtCell(change[0][0],7)
+            gdrfaValue=hot.getDataAtCell(change[0][0],19)
+            uaeVisaIssuanceValue=hot.getDataAtCell(change[0][0],20)
+            memberTypeValue=hot.getDataAtCell(change[0][0],21)
+            entityTypeValue=hot.getDataAtCell(change[0][0],22)
+            if(change[0][1]=="Relation"){
+                if(relationValue=="1= PRINCIPAL"){
+                    hot.setCellMeta(change[0][0],12, 'readOnly', false)
+                    hot.setCellMeta(change[0][0],13, 'readOnly', false)
+                    hot.setCellMeta(change[0][0],12, 'className', "")
+                    hot.setCellMeta(change[0][0],13, 'className', "")
+                    hot.setDataAtCell(change[0][0],12,"");
+                    hot.setDataAtCell(change[0][0],13,"");
+                }else{
+                    hot.setCellMeta(change[0][0],12, 'readOnly', true)
+                    hot.setCellMeta(change[0][0],13, 'readOnly', true)
+                    hot.setCellMeta(change[0][0],12, 'className', "htDisabled")
+                    hot.setCellMeta(change[0][0],13, 'className', "htDisabled")
+                    hot.setDataAtCell(change[0][0],12,"");
+                    hot.setDataAtCell(change[0][0],13,"");
                 }
-                $("#step1Submit").fadeIn();
+            }
+            $("#step1Submit").fadeIn();
         });
-
         var exportPlugin = hot.getPlugin('exportFile');
         
         downloadCsv.addEventListener('click', function() {
@@ -622,13 +587,8 @@
             emptyRow=hot.isEmptyRow(row)
             var currentColIndex=hot.propToCol(prop)
             var currentCellValue=hot.getDataAtCell(row,currentColIndex)
-            categoriesValidator=false
-                categoriesFilled.forEach(item => {
-                    if(item.currentRowIndex==row){
-                        categoriesValidator=true
-                    }
-                })
-            
+            rowMetaData=hot.getDataAtRow(row)
+            relationValue=hot.getDataAtCell(row,6)
         });
         Handsontable.dom.addEvent(document.getElementById('step1Submit'), 'click', async function() {
             //.step1Modal .spinner-border .modal-content
@@ -640,37 +600,37 @@
             let invalidEntries=[]
             let validRowsIndexes=[]
             
-            if(validLimits==""){
-                hot.validateCells(function(hotIsValid) {
-                    allDataArray.forEach(item => {
-                        var newItem = [];
-                        allDataArray.forEach(innerItem => {
-                            if(innerItem.row == item.row){
-                                newItem = newItem.concat(innerItem.cells);
-                            }
-                        });
-                        if(oldRow!=item.row){
-                            newArray.push(newItem);
-                            oldRow=item.row
+            //if(validLimits==""){
+            hot.validateCells(function(hotIsValid) {
+                allDataArray.forEach(item => {
+                    var newItem = [];
+                    allDataArray.forEach(innerItem => {
+                        if(innerItem.row == item.row){
+                            newItem = newItem.concat(innerItem.cells);
                         }
                     });
-                    let allFilledRows = newArray.slice(6).reverse()
-                    allFilledRows.forEach((filledRow,index) => {
-                        var p=filledRow.map((valid) =>  valid.isValid).indexOf(false);
-                        if(p<0){
-                            validEntries.push(filledRow)
-                            validRowsIndexes.push(index)
-                        }else{
-                            invalidEntries.push(filledRow)
-                        }
-                    })
-                    $(".step1Modal .spinner-border").hide().siblings("h5").removeClass("d-none")
-                    $(".step1Modal .modal-footer").removeClass("d-none")
+                    if(oldRow!=item.row){
+                        newArray.push(newItem);
+                        oldRow=item.row
+                    }
+                });
+                let allFilledRows = newArray.slice(6).reverse()
+                allFilledRows.forEach((filledRow,index) => {
+                    var p=filledRow.map((valid) =>  valid.isValid).indexOf(false);
+                    if(p<0){
+                        validEntries.push(filledRow)
+                        validRowsIndexes.push(index)
+                    }else{
+                        invalidEntries.push(filledRow)
+                    }
                 })
-                $('#proceedConfirmation').modal()
-            }else{
-                alert(validLimits)
-            }
+                $(".step1Modal .spinner-border").hide().siblings("h5").removeClass("d-none")
+                $(".step1Modal .modal-footer").removeClass("d-none")
+            })
+            $('#proceedConfirmation').modal()
+            // }else{
+            //     alert(validLimits)
+            // }
         })
         Handsontable.dom.addEvent(document.getElementById('proceedToStep2'), 'click', async function() {
                 $('#proceedConfirmation').modal('hide')
@@ -715,10 +675,7 @@
                         var d = new Date();
                         var month = d.getMonth()+1;
                         var day = d.getDate();
-
-                        var outputDate = d.getFullYear() + '/' +
-                            (month<10 ? '0' : '') + month + '/' +
-                            (day<10 ? '0' : '') + day;
+                        var outputDate = d.getFullYear() + '/' + (month<10 ? '0' : '') + month + '/' + (day<10 ? '0' : '') + day;
                         if(rowIndex < arrayCount){
                             addHealthTempId++;
                             var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
@@ -829,4 +786,5 @@
             $(this).text((dateNewFormat==="Invalid date") ? "-" : dateNewFormat)
         });
     })
+    
 </script>
