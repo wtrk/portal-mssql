@@ -57,7 +57,7 @@ var min2ifNotEmpty = (value, callback) => {
     return $("#text-error").html(resLettersSpaces.message)
   }
 };
-var acceptableDate = (value = "", callback) => {
+var acceptableDate = (value, callback) => {
 
   if(emptyRow){
     callback(true);
@@ -118,7 +118,6 @@ var positionValidation = (value, callback) => {
   callback(true)
   return $("#text-error").html("")
 }
-
 var emailValidation = (value, callback) => {
   
   if(emptyRow){
@@ -142,7 +141,6 @@ var emailValidation = (value, callback) => {
   callback(true)
   return $("#text-error").html("")
 }
-
 var phoneNumberValidation = (value, callback) => {
   if(emptyRow){
     callback(true);
@@ -166,12 +164,11 @@ var phoneNumberValidation = (value, callback) => {
   callback(true)
   return $("#text-error").html("")
 }
-var uidValidation=function(value,callback){
+var uidValidation = (value,callback) => {
   if(emptyRow){
     callback(true);
     return $("#text-error").html("");
   }
-  console.log(addHealthTempsData)
     if(addHealthTempsData.map(e=>e.uid).includes(value)){
         callback(false)
         return $("#text-error").html("UID already exists")
@@ -191,8 +188,7 @@ var uidValidation=function(value,callback){
         $("#text-error").html("This field is mandatory")
     }
 }
-
-var passportNumValidation=function(value,callback){
+var passportNumValidation = (value,callback) => {
   if(emptyRow){
       callback(true)
       return $("#text-error").html("")
@@ -357,7 +353,7 @@ var UAEnumFormat = (value, callback) => {
 
   callback(true)
 }
-var emiratesIdNumber=(value,callback) => {
+var emiratesIdNumber = (value,callback) => {
   if(emptyRow){
     callback(true);
     return $("#text-error").html("");
@@ -366,79 +362,91 @@ var emiratesIdNumber=(value,callback) => {
     callback(false)
     return $("#text-error").html("Emirates ID already exists")
   }
-
-  var resNotEmpty = notEmptyfunction(value)
-  if(resNotEmpty.valid){
-      var validIdNum=validIdNumFunction(value,18,3)
-      if(validIdNum.validation==true){
-          callback(true)
-          $("#text-error").html("")
-      }else{
-          callback(false)
-          $("#text-error").html("The selected data field must be a valid emirates Id number")
-      }
-  }else{
-      callback(false)
-      $("#text-error").html("This field is mandatory")
+  if(!value){
+    callback(false)
+    return $("#text-error").html("This field is mandatory")
   }
+  if(value.slice(0,6)==="8002201" || value.slice(0,6)==="8002202"){
+    if(value.split("").length!==21){
+      callback(false)
+      return $("#text-error").html("The selected data field must be a valid emirates Id number")
+    }
+  }else{
+    const vA=value.split("-")
+    if(vA.length===4){
+      const vA1stPart=vA[0].split("")
+      const vA2ndPart=vA[1].split("")
+      const vA3rdPart=vA[2].split("")
+      const vA4thPart=vA[3].split("")
+      if(vA1stPart.length!=3 || vA2ndPart.length!=4 || vA3rdPart.length!=7 || vA4thPart.length!=1){
+        callback(false)
+        return $("#text-error").html("The selected data field must be a valid emirates Id number")
+      }
+    }else{
+      callback(false)
+      return $("#text-error").html("The selected data field must be a valid emirates Id number")
+    }
+  }
+  callback(true)
+  return $("#text-error").html("")
 }
-var estIdValidation=(value,callback) => {
+var estIdValidation = (value,callback) => {
   if(emptyRow){
     callback(true);
     return $("#text-error").html("");
   }
-        var resNotEmpty=notEmptyfunction(value)
-        if(resNotEmpty.valid){
-          if(value==gdrfaValue){
-              callback(false)
-              $("#text-error").html("This field should not be equal to the GDRFAFileNUmber value")
+  var resNotEmpty=notEmptyfunction(value)
+  if(resNotEmpty.valid){
+    if(value==gdrfaValue){
+        callback(false)
+        $("#text-error").html("This field should not be equal to the GDRFAFileNUmber value")
+    }else{
+      if(memberTypeValue=="UAE National – Emirates ID" || memberTypeValue=="GCC National - Passport"){
+        $("#text-error").html("This field should be empty for "+memberTypeValue)
+        return callback(false)
+      }
+      if(entityTypeValue=="Resident" || entityTypeValue=="Investor Visa"){
+          var validIdNum=validIdNumFunction(value,13,3)
+          if(validIdNum.validation==true){
+              callback(true)
+              $("#text-error").html("")
           }else{
-            if(memberTypeValue=="UAE National – Emirates ID" || memberTypeValue=="GCC National - Passport"){
-              $("#text-error").html("This field should be empty for "+memberTypeValue)
-              return callback(false)
-            }
-            if(entityTypeValue=="Resident" || entityTypeValue=="Investor Visa"){
-                var validIdNum=validIdNumFunction(value,13,3)
-                if(validIdNum.validation==true){
-                    callback(true)
-                    $("#text-error").html("")
-                }else{
-                    callback(false)
-                    $("#text-error").html("The selected data field "+validIdNum.message)
-                }
+              callback(false)
+              $("#text-error").html("The selected data field "+validIdNum.message)
+          }
 
-            }else if(entityTypeValue=="UAE Citizen" || entityTypeValue=="GCC Citizen"){
-                var uidNumber=uidNumberFunction(value,6,15)
-                if(uidNumber.validation==true){
-                    callback(true)
-                    $("#text-error").html("")
-                }else{
-                    callback(false)
-                    $("#text-error").html("The selected data field "+uidNumber.message)
-                }
-            }else{
-                var uidNumber=uidNumberFunction(value,9,11)
-                if(uidNumber.validation==true){
-                    callback(true)
-                    $("#text-error").html("")
-                }else{
-                    callback(false)
-                    $("#text-error").html("The selected data field "+uidNumber.message)
-                }
-            }
+      }else if(entityTypeValue=="UAE Citizen" || entityTypeValue=="GCC Citizen"){
+          var uidNumber=uidNumberFunction(value,6,15)
+          if(uidNumber.validation==true){
+              callback(true)
+              $("#text-error").html("")
+          }else{
+              callback(false)
+              $("#text-error").html("The selected data field "+uidNumber.message)
           }
-        }else{
-          if(memberTypeValue=="UAE National – Emirates ID" || memberTypeValue=="GCC National - Passport"){
-            $("#text-error").html("")
-            return callback(true)
+      }else{
+          var uidNumber=uidNumberFunction(value,9,11)
+          if(uidNumber.validation==true){
+              callback(true)
+              $("#text-error").html("")
+          }else{
+              callback(false)
+              $("#text-error").html("The selected data field "+uidNumber.message)
           }
-          callback(false)
-          $("#text-error").html("This field is mandatory")
-        
-        }
+      }
+    }
+  }else{
+    if(memberTypeValue=="UAE National – Emirates ID" || memberTypeValue=="GCC National - Passport"){
+      $("#text-error").html("")
+      return callback(true)
+    }
+    callback(false)
+    $("#text-error").html("This field is mandatory")
+  
+  }
 
 }
-var categoriesValidation= function(value, callback){
+var categoriesValidation = (value, callback)=>{
   if(emptyRow){
     callback(true);
     return $("#text-error").html("");
