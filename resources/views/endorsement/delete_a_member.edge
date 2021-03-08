@@ -1,6 +1,7 @@
 @layout('layout.app')
 @section('css')
 <link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
+
 <style>
     .handsontable tbody th,
     .handsontable thead th,
@@ -108,30 +109,6 @@
 <script>
     $(document).ready(function() {
         //$("#step2Submit").hide();
-            var dataArray=[]
-        $("#step1Submit").on("click", function() {
-            $("tr.selected").each(function () {
-                var entryId = $(this).attr("id").slice(10);
-                dataArray.push(entryId)
-            });
-            if(dataArray.length==0){
-                    alert("You didn't select any entry")
-            }else{
-                $.ajax({
-                    url: "{{ route('deleteAMember1') }}",
-                    type: "post",
-                    data:  {cor:cor,step:2,data:dataArray},
-                    success: function (res) {
-                        $(".content-step-2").html(res)
-                    },
-                    error: function(xhr, status, error) {
-                        alert('Something went wrong')
-                        console.log(xhr.responseText);
-                    }
-                });
-                $("#smartwizard-arrows-primary").smartWizard("next");
-            }
-        });
         $("#step2Submit").on("click", function() {
             var step2Data=[]
             var valError=0

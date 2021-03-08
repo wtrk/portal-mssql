@@ -269,6 +269,7 @@ var validEmailAndMandatory = (value, callback) => {
   }
 }
 var memberTypesValidation = (value, callback) => {
+  const dataValue=value?value.trim():"";
   if(emptyRow){
     callback(true);
     return $("#text-error").html("");
@@ -278,7 +279,7 @@ var memberTypesValidation = (value, callback) => {
   const agePerDays=Math.floor((currentTimestamp-timestampFromValue) / (24 * 60 * 60 * 1000));
 
   if(agePerDays<=31){
-    if(value=="6 = Newborn - Birth Certificate ID"){
+    if(dataValue=="6 = Newborn - Birth Certificate ID"){
         callback(true)
         $("#text-error").html("")
     }else{
@@ -287,7 +288,7 @@ var memberTypesValidation = (value, callback) => {
     }
   }else{
     if(nationalityValue=="United Arab Emirates"){
-        if(value=="1 = UAE National – Emirates ID"){
+        if(dataValue=="1 = UAE National – Emirates ID"){
             callback(true)
             $("#text-error").html("")
         }else{
@@ -295,7 +296,7 @@ var memberTypesValidation = (value, callback) => {
             $("#text-error").text("It is mandatory to choose '1 = UAE National – Emirates ID' for Emiratis")
         }
     }else if(nationalityValue=="Oman" || nationalityValue=="Bahrain" || nationalityValue=="Kuwait" || nationalityValue=="Qatar" || nationalityValue=="Kingdom Of Saudi Arabia"){
-        if(value=="2 = GCC National - Passport"){
+        if(dataValue=="2 = GCC National - Passport"){
             callback(true)
             $("#text-error").html("")
         }else{
@@ -303,21 +304,21 @@ var memberTypesValidation = (value, callback) => {
             $("#text-error").text("It is mandatory to choose '2 = GCC National - Passport' if you are from "+nationalityValue)
         }
     }else{
-        if(uaeVisaIssuanceValue=="Ajman"){
-            if(value=="4 = Expat whos residency is issued in Dubai - File Number"){
-                callback(true)
+        if(uaeVisaIssuanceValue=="Dubai" || uaeVisaIssuanceValue=="4 = Dubai"){
+            if(dataValue=="4 = Expat who's residency is issued in Dubai - File Number"){
                 $("#text-error").html("")
+                return callback(true)
             }else{
                 callback(false)
-                $("#text-error").text("It is mandatory to choose '4 = Expat whos residency is issued in Dubai - File Number'")
+                $("#text-error").text("It is mandatory to choose '4 = Expat who's residency is issued in Dubai - File Number'")
             }
         }else{
-            if(value=="5 = Expat whos residency is issued in Emirates other than Dubai - File Number"){
+            if(dataValue=="5 = Expat who's residency is issued in Emirates other than Dubai - File Number"){
                 callback(true)
                 $("#text-error").html("")
             }else{
                 callback(false)
-                $("#text-error").text("It is mandatory to choose '5 = Expat whos residency is issued in Emirates other than Dubai - File Number' in UAE for foreigner")
+                $("#text-error").text("It is mandatory to choose '5 = Expat who's residency is issued in Emirates other than Dubai - File Number' in UAE for foreigner")
             }
         }
     }
@@ -366,7 +367,7 @@ var emiratesIdNumber = (value,callback) => {
     callback(false)
     return $("#text-error").html("This field is mandatory")
   }
-  if(value.slice(0,6)==="8002201" || value.slice(0,6)==="8002202"){
+  if(value.slice(0,7)==="8002201" || value.slice(0,7)==="8002202"){
     if(value.split("").length!==21){
       callback(false)
       return $("#text-error").html("The selected data field must be a valid emirates Id number")
@@ -401,11 +402,11 @@ var estIdValidation = (value,callback) => {
         callback(false)
         $("#text-error").html("This field should not be equal to the GDRFAFileNUmber value")
     }else{
-      if(memberTypeValue=="UAE National – Emirates ID" || memberTypeValue=="GCC National - Passport"){
+      if(memberTypeValue=="1 = UAE National – Emirates ID" || memberTypeValue=="2 = GCC National - Passport"){
         $("#text-error").html("This field should be empty for "+memberTypeValue)
         return callback(false)
       }
-      if(entityTypeValue=="Resident" || entityTypeValue=="Investor Visa"){
+      if(entityTypeValue=="1 = Resident" || entityTypeValue=="4 = Investor Visa"){
           var validIdNum=validIdNumFunction(value,13,3)
           if(validIdNum.validation==true){
               callback(true)
@@ -415,7 +416,7 @@ var estIdValidation = (value,callback) => {
               $("#text-error").html("The selected data field "+validIdNum.message)
           }
 
-      }else if(entityTypeValue=="UAE Citizen" || entityTypeValue=="GCC Citizen"){
+      }else if(entityTypeValue=="2 = UAE Citizen" || entityTypeValue=="5 = GCC Citizen"){
           var uidNumber=uidNumberFunction(value,6,15)
           if(uidNumber.validation==true){
               callback(true)

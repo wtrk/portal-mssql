@@ -35,6 +35,7 @@
             $(this).text((dateNewFormat==="Invalid date") ? "-" : dateNewFormat)
         });
         var datatablesMulti = $("#datatables-multi").DataTable({
+            statesave: true,
             columnDefs: [ {
                 orderable: false,
                 className: 'select-checkbox',
@@ -45,6 +46,29 @@
                 selector: 'td:nth-child(1)'
             },
             order: [[ 1, 'asc' ]]
+        });
+        
+        var dataArray=[]
+        $("#step1Submit").on("click", function() {
+            var rows_selected = datatablesMulti.rows('.selected').data();
+            if(rows_selected.length){
+                rows_selected.each(e => dataArray.push(e[2]))
+                $.ajax({
+                    url: "{{ route('deleteAMember1') }}",
+                    type: "post",
+                    data:  {cor:cor,step:2,data:dataArray},
+                    success: function (res) {
+                        $(".content-step-2").html(res)
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Something went wrong')
+                        console.log(xhr.responseText);
+                    }
+                });
+                $("#smartwizard-arrows-primary").smartWizard("next");
+            }else{
+                alert("You didn't select any entry")
+            }
         });
     })
 </script>

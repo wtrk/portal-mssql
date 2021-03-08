@@ -397,18 +397,18 @@
             "Mobile No",
             "E-mail"];
         let columnsFromCOR=[
-           {data: "Company Name", type: 'dropdown', source: companyName ,allowInvalid: true},
+           {data: "Company Name", type: 'autocomplete', source: companyName ,allowInvalid: true},
            {data: "Shop or Site or Department", type: "text", validator:notEmpty ,allowInvalid: true},
            {data: "Employee Staff ID", type: "text", validator:employeeStaffId ,allowInvalid: true},
            {data: "First Name", type: "text", validator:namesValidation ,allowInvalid: true},
            {data: "Second Name", type: "text", validator:min2ifNotEmpty ,allowInvalid: true},
            {data: "Family Name", type: "text", validator:namesValidation ,allowInvalid: true},
-           {data: "Relation", type: 'dropdown', source: ["1= PRINCIPAL","2= SPOUSE","3= CHILD"]},
+           {data: "Relation", type: 'autocomplete', source: ["1= PRINCIPAL","2= SPOUSE","3= CHILD"]},
            {data: "DOB", type: "text",placeholder:'DD/MM/YYYY',className:'dobFormat', validator:acceptableDate ,allowInvalid: true},
-           {data: "Gender", type: 'dropdown', source: ["1= MALE","2= FEMALE"] ,allowInvalid: true},
-           {data: "Nationality", type: 'dropdown', source: nationalities ,allowInvalid: true},
-           {data: "Marital Status", type: 'dropdown', source: ["1= SINGLE","2= MARRIED","3= DIVORCED"], validator:statusValidation ,allowInvalid: true},
-           {data: "Cost Sharing", type: 'dropdown', source: ["CO-NIL","CO-NSSF"] ,allowInvalid: true},
+           {data: "Gender", type: 'autocomplete', source: ["1= MALE","2= FEMALE"] ,allowInvalid: true},
+           {data: "Nationality", type: 'autocomplete', source: nationalities ,allowInvalid: true},
+           {data: "Marital Status", type: 'autocomplete', source: ["1= SINGLE","2= MARRIED","3= DIVORCED"], validator:statusValidation ,allowInvalid: true},
+           {data: "Cost Sharing", type: 'autocomplete', source: ["CO-NIL","CO-NSSF"] ,allowInvalid: true},
            {data: "Position", type: "text", validator:positionValidation ,allowInvalid: true},
            {data: "Grade", type: "text", validator:gradeValidation ,allowInvalid: true},
            {data: "Mobile No", type: "text", validator:phoneNumberValidation ,allowInvalid: true},
@@ -437,14 +437,14 @@
                 {data: "PASSPORT NO.", type: "text", validator:passportNumValidation ,allowInvalid: true},
                 {data: "UID", type: "text", validator:uidValidation ,allowInvalid: true},
                 {data: "GDRFAFileNumber", type: "text", validator:gdrfaFileNumber ,allowInvalid: true},
-                {data: "EMIRATE OF VISA ISSUANCE", type: 'dropdown', source:emirates, validator:notEmpty ,allowInvalid: true},
-                {data: "MEMBER TYPE", type: 'dropdown', source: memberTypes, validator:memberTypesValidation ,allowInvalid: true},
-                {data: "ENTITY TYPE", type: 'dropdown', source: entityTypes, validator:entityTypesValidation ,allowInvalid: true},
+                {data: "EMIRATE OF VISA ISSUANCE", type: 'autocomplete', source:emirates, validator:notEmpty ,allowInvalid: true},
+                {data: "MEMBER TYPE", type: 'autocomplete', source: memberTypes, validator:memberTypesValidation ,allowInvalid: true},
+                {data: "ENTITY TYPE", type: 'autocomplete', source: entityTypes, validator:entityTypesValidation ,allowInvalid: true},
                 {data: "ESTABLISHMENT ID#", type: 'text', validator:estIdValidation ,allowInvalid: true},
-                {data: "RESIDENTIAL LOCATION", type: 'dropdown', source: residentialLocations, validator:notEmpty ,allowInvalid: true},
-                {data: "WORK LOCATION", type: 'dropdown', source: workLocations, validator:notEmpty ,allowInvalid: true},
-                {data: "EMPLOYEES SALARY BRACKET", type: 'dropdown', source: employeesSalaryBrackets, validator:notEmpty ,allowInvalid: true},
-                {data: "COMMISSION", type: 'dropdown', source: ["Yes","No"], validator:notEmpty ,allowInvalid: true},
+                {data: "RESIDENTIAL LOCATION", type: 'autocomplete', source: residentialLocations, validator:notEmpty ,allowInvalid: true},
+                {data: "WORK LOCATION", type: 'autocomplete', source: workLocations, validator:notEmpty ,allowInvalid: true},
+                {data: "EMPLOYEES SALARY BRACKET", type: 'autocomplete', source: employeesSalaryBrackets, validator:notEmpty ,allowInvalid: true},
+                {data: "COMMISSION", type: 'autocomplete', source: ["Yes","No"], validator:notEmpty ,allowInvalid: true},
                 {data: "ENTITY CONTACT NUMBER", type: "text", validator:UAEnumFormat ,allowInvalid: true},
                 {data: "ENTITY E-MAIL ID", type: "text", validator:validEmailAndMandatory ,allowInvalid: true})
 
@@ -458,7 +458,7 @@
                 {data: "EMIRATES ID NO.", type: "text", validator:emiratesIdNumber ,allowInvalid: true},
                 {data: "PASSPORT NO.", type: "text", validator:passportNumValidation ,allowInvalid: true},
                 {data: "UID", type: "text", validator:uidValidation ,allowInvalid: true},
-                {data: "Has the member been previously insured?", type: 'dropdown', source: ["Yes","No"]})
+                {data: "Has the member been previously insured?", type: 'autocomplete', source: ["Yes","No"]})
         }else if(cor=='OTHER EMIRATES'){
             colHeaderFromCOR.push(
                 "EMIRATES ID NO.",
@@ -495,7 +495,7 @@
             colHeaderFromCOR.push("Policy Id #: "+value.master_policy_clover_id)
             if(value.lob=="GROUP HEALTH"){
                 const catInDropDown=categoriesDB.filter(catValue => value.master_policy_clover_id===catValue.master_policy_clover_id).map(catValue => catValue.cat_name)
-                columnsFromCOR.push({data: value.master_policy_clover_id,className:'categories', type: 'dropdown', source: catInDropDown,  validator:categoriesValidation ,allowInvalid: true})
+                columnsFromCOR.push({data: value.master_policy_clover_id,className:'categories', type: 'autocomplete', source: catInDropDown,  validator:categoriesValidation ,allowInvalid: true})
 
             }else{
                 $.each( catBasedOnLimit, function( i, cats ) {
