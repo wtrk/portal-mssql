@@ -1135,8 +1135,6 @@ class EndorsementController {
     addHealthTempsErrorData.forEach(e=>webReqNum=(e.web_req_id > webReqNum) ? e.web_req_id : webReqNum)
     const webReqId = webReqNum + 1;
     session.put("webReqId", webReqId);
-    session.put("master_account", master_account);
-    session.put("cor", cor);
 
     const companyNameDB = await Database.from("Globals_rep.dbo.contact_links_tbl_rep").where("client_contact_id", auth.user.linked_user_id).distinct("client_cr_name");
     let companyName = companyNameDB.map((a) => a.client_cr_name);
@@ -1196,74 +1194,54 @@ class EndorsementController {
   }
   async addAMember2({ view, request, session, auth }) {
     const insertedData = request.input("data");
-    const cor = session.get("cor");
-    const webReqId = session.get("webReqId");
-    const master_account = session.get("master_account");
-    const HOTcols = Object.entries(request.body.data[0]).map(e=>e[1]).map(e=>Object.keys(e)[0])
-    const validEntries = []
-    const invalidEntries = []
-    request.body.data.forEach(e=>{
-      let validRow=true
-      Object.entries(e).forEach(eSub=>{
-        if(eSub[1].valid=="false"){
-          validRow=false
-        }
-      })
-      if(validRow===true){
-        validEntries.push(Object.entries(e).map(eSub=>eSub[1]))
+    return console.log("insertedData",insertedData)
+    const HOTcols = JSON.parse(request.input("HOTcols"));
+    insertedData.dataDB.map((e) => {
+      if(moment(e.dob).format("YYYY-MM-DD HH:MM:SS")!="Invalid date"){
+        e.dob=moment(e.dob).format("YYYY-MM-DD HH:MM:SS")
       }else{
-        invalidEntries.push(Object.entries(e).map(eSub=>eSub[1]))
+        e.dob='1000-01-01'
       }
-    })
+    });
+    await Database.from("add_health_log").insert(insertedData.dataDB);
 
-    //Check the 0 some times
-    // and fix the below before proceeding
-    // insertedData.dataDB.map((e) => {
-    //   if(moment(e.dob).format("YYYY-MM-DD HH:MM:SS")!="Invalid date"){
-    //     e.dob=moment(e.dob).format("YYYY-MM-DD HH:MM:SS")
-    //   }else{
-    //     e.dob='1000-01-01'
-    //   }
-    // });
-    // await Database.from("add_health_log").insert(insertedData.dataDB);
-
-    // let tableHeaders = [];
-    // let validContent = [];
-    // let invalidContent = [];
-    // if (insertedData.validEntries) {
-    //   insertedData.validEntries.forEach(function (validE, index) {
-    //     let validENewArray = [];
-    //     tableHeaders.length = 0;
-    //     Object.keys(validE).forEach((key) => {
-    //       let e=validE[key]
-    //       tableHeaders.push(e.prop);
-    //       validENewArray.push(e.value);
-    //     });
-    //     validContent=[...validContent,validENewArray.reverse()];
-    //   });
-    // }
-    // if (insertedData.invalidEntries) {
-    //   insertedData.invalidEntries.forEach((invalidE) => {
-    //     let invalidENewArray = [];
-    //     tableHeaders.length = 0;
-    //     Object.keys(invalidE).forEach((key) => {
-    //       let e=invalidE[key]
-    //       tableHeaders.push(e.prop);
-    //       invalidENewArray.push(e.value);
-    //     });
-    //     invalidContent=[...invalidContent,invalidENewArray.reverse()];
-    //   });
-    // }
+    let tableHeaders = [];
+    let validContent = [];
+    let invalidContent = [];
+    if (insertedData.validEntries) {
+      insertedData.validEntries.forEach(function (validE, index) {
+        let validENewArray = [];
+        tableHeaders.length = 0;
+        Object.keys(validE).forEach((key) => {
+          let e=validE[key]
+          tableHeaders.push(e.prop);
+          validENewArray.push(e.value);
+        });
+        validContent=[...validContent,validENewArray.reverse()];
+      });
+    }
+    if (insertedData.invalidEntries) {
+      insertedData.invalidEntries.forEach((invalidE) => {
+        let invalidENewArray = [];
+        tableHeaders.length = 0;
+        Object.keys(invalidE).forEach((key) => {
+          let e=invalidE[key]
+          tableHeaders.push(e.prop);
+          invalidENewArray.push(e.value);
+        });
+        invalidContent=[...invalidContent,invalidENewArray.reverse()];
+      });
+    }
     const rejectedPolicyId = session.get("rejected_policyId");
     let policiesDB = [];
     if (rejectedPolicyId === null) {
       policiesDB = await getDistinctMaster(auth.user.linked_user_id)
-        .where("policies.cor", cor)
+        .where("policies.cor", insertedData.cor)
         .distinct("policies.master_policy_clover_id")
         .distinct("lob");
     } else {
       policiesDB = await getDistinctMaster(auth.user.linked_user_id)
-        .where("policies.cor", cor)
+        .where("policies.cor", insertedData.cor)
         .where("policies.master_policy_clover_id", rejectedPolicyId)
         .distinct("policies.master_policy_clover_id")
         .distinct("lob");
@@ -1277,12 +1255,12 @@ class EndorsementController {
       .distinct("client_contact_name")
       .first();
 
-    const companiesNameDB = await Database.from(
+    const companyNameDB = await Database.from(
       "Globals_rep.dbo.contact_links_tbl_rep"
     )
       .where("client_contact_id", auth.user.linked_user_id)
       .distinct("client_cr_name");
-    let companiesName = companiesNameDB.map((a) => a.client_cr_name);
+    let companyName = companyNameDB.map((a) => a.client_cr_name);
 
     const emiratesDB = await Database.from("Globals_rep.dbo.Emirates_rep");
     let emirates = emiratesDB.map((a) => a.name);
@@ -1317,31 +1295,29 @@ class EndorsementController {
       "employees_salary_brackets"
     ).distinct("name");
     let employeesSalaryBrackets = employeesSalaryBracketsDB.map((a) => a.name);
-    
-// return console.log("workLocations",workLocations)
+
     return view.render("endorsement/add_a_member_2", {
-      webReqId: webReqId,
-      invalidDetails: invalidEntries,
-      HOTcols: HOTcols,
-      master_account: master_account,
-      cor: cor,
-      companiesName: companiesName,
+      webReqId: insertedData.web_req_id,
+      tableHeaders: tableHeaders.reverse(),
+      validContent: validContent,
+      invalidContent: invalidContent,
+      companyName: companyName,
       emirates: emirates,
       nationalities: nationalities,
       memberTypes: memberTypes,
       entityTypes: entityTypes,
       establishmentIds: establishmentIds,
       residentialLocations: residentialLocations,
-      policies: policies,
-      policiesDB: policiesDB,
+      workLocations: workLocations,
       employeesSalaryBrackets: employeesSalaryBrackets,
       client_contact_id: auth.user.linked_user_id,
+      invalidDetails: insertedData.invalidEntries,
+      policies: policies,
+      policiesDB: policiesDB,
       client_contact_name: contact,
-      workLocations: workLocations,
-//The below should be fixed
-      // tableHeaders: tableHeaders.reverse(),
-      // validContent: validContent,
-      // invalidContent: invalidContent
+      HOTcols: HOTcols,
+      master_account: insertedData.master_account,
+      cor: insertedData.cor,
     });
   }
   async addAMember3({ view, auth, request, response, session }) {

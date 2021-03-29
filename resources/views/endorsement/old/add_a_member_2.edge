@@ -1,0 +1,1793 @@
+<link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
+<style>
+</style>
+<div class="mb-3 px-3" style="border-bottom:20px solid #f5f9fc;">
+
+    <div class="card-header">
+        <h5 class="card-title">Valid Entries</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered" id="validtable">
+            <thead>
+                <tr>
+                    <th></th>
+                    @each(colHeader in HOTcols)
+                    <th>{{colHeader}}</th>
+                    @endeach
+                </tr>
+            </thead>
+            <!--  <tbody id="validtbody">
+                @each(rowBody in invalidDetails)
+                <tr>
+                    <td><i class="align-middle fas fa-fw fa-check text-success"></i></td>
+                    @each(colBody in rowBody)
+                    <td>{{colBody[0]}}</td>
+                    @endeach
+                </tr>
+                @endeach
+            </tbody>  -->
+        </table>
+
+    </div>
+</div>
+<div class="mb-3 px-3">
+
+    <div class="card-header">
+        <h5 class="card-title">Invalid Entries
+            <em style="font-size: 13px;padding-left: 20px;">(Please fix below entries to avoid rejections or
+                delays)</em></h5>
+    </div>
+    <div id="datatables-hot"></div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="confirmationDialog" tabindex="-1" role="dialog" aria-labelledby="confirmationDialogLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationDialogLabel">Before proceeding to STEP 3, do you want to save
+                    invalid entries? If yes, Invalid entries are parked on this portal until they are validated. If No,
+                    only valid entries are saved</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmYes">Save all entries</button>
+                <button type="button" class="btn btn-primary" id="confirmNo">Save only valid entries</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+{{ script('assets/js/hot-functions') }}
+<script>
+    var categoriesValidator=false, relationValue=null, nationalityValue=null, ageValue=null, uaeVisaIssuanceValue=null, memberTypeValue=null, gdrfaValue=null, entityTypeValue=null,emptyRow=true
+
+    $(function() {
+        //var tableHeaders = {{{ toJSON(tableHeaders) }}},
+        // invalidContent = {{{ toJSON(invalidContent) }}},
+        var invalidDetails = {{{ toJSON(invalidDetails) }}},
+        webReqId={{{ webReqId }}},
+        policiesDB={{{ toJSON(policiesDB) }}},
+        policies={{{ toJSON(policies) }}},
+        contact ={{{ toJSON(contact) }}},
+        client_contact_id ={{{ toJSON(client_contact_id) }}},
+        nationalities={{{ toJSON(nationalities) }}},
+        companyName={{{ toJSON(companyName) }}},
+        emirates={{{ toJSON(emirates) }}},
+        memberTypes={{{ toJSON(memberTypes) }}},
+        entityTypes={{{ toJSON(entityTypes) }}},
+        establishmentIds={{{ toJSON(establishmentIds) }}},
+        residentialLocations={{{ toJSON(residentialLocations) }}},
+        workLocations={{{ toJSON(workLocations) }}},
+        employeesSalaryBrackets={{{ toJSON(employeesSalaryBrackets) }}},
+        residentialLocations={{{ toJSON(residentialLocations) }}},
+        master_account={{{ toJSON(master_account) }}},
+        cor={{{ toJSON(cor) }}},
+        HOTcols={{{ toJSON(HOTcols) }}}
+        const policiesLength=policies.length
+        console.log("HOTcols",HOTcols)
+        //Validations done: dropdown, notEmpty, email, minimum length 2, if filled min length
+        // var emiratesIdNumber=function(value,callback){
+            
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //             var validIdNum=validIdNumFunction(value,18,3)
+        //             if(validIdNum.validation==true){
+        //                 callback(true)
+        //                 $("#text-error").html("")
+        //             }else{
+        //                 callback(false)
+        //                 $("#text-error").html("The selected data field "+validIdNum.message)
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var distinctNumbers=function(value,callback){
+            
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //             var distinctNumber=distinctNumberFunction(value)
+        //             if(distinctNumber.validation==true){
+        //                 callback(true)
+        //                 $("#text-error").html("")
+        //             }else{
+        //                 callback(false)
+        //                 $("#text-error").html("The selected data field "+distinctNumber.message)
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var uidValidation=function(value,callback){
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //             var uidNumber=uidNumberFunction(value,6,15)
+        //             if(uidNumber.validation==true){
+        //                 callback(true)
+        //                 $("#text-error").html("")
+        //             }else{
+        //                 callback(false)
+        //                 $("#text-error").html("The selected data field "+uidNumber.message)
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var gdrfaFileNumber=function(value,callback){
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //             var validIdNum=validIdNumFunction(value,16,3)
+        //             var notEmpty=notEmptyfunction(value)
+        //             if(nationalityValue!="United Arab Emirates"){
+        //                 if(validIdNum.validation==true){
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }else{
+        //                     callback(false)
+        //                     $("#text-error").html("The selected data field "+validIdNum.message)
+        //                 }
+        //             }else{
+        //                 if(notEmpty.validation==true){
+        //                     callback(false)
+        //                     $("#text-error").html("You Should keep this field empty if you are emirati")
+        //                 }else{
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var nationalIdValidation= function (value, callback) {
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //         var notEmpty=notEmptyfunction(value)
+        //         var validIdNum=validIdNumFunction(value,10,3)
+        //             if(notEmpty.validation==true){
+        //                 if(validIdNum.validation==true){
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }else{
+        //                     callback(false)
+        //                     $("#text-error").html("The selected data field "+validIdNum.message)
+        //                 }
+        //             }else{
+        //                 if(nationalityValue=="Jordan"){
+        //                     callback(false)
+        //                     $("#text-error").html("<p>The selected data field "+notEmpty.message+"</p>")
+        //                 }else{
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var saudiIdValidation= function (value, callback) {
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //         var notEmpty=notEmptyfunction(value)
+        //         var validIdNum=validIdNumFunction(value,10,3)
+        //             if(notEmpty.validation==true){
+        //                 if(validIdNum.validation==true){
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }else{
+        //                     callback(false)
+        //                     $("#text-error").html("The selected data field "+validIdNum.message)
+        //                 }
+        //             }else{
+        //                 if(nationalityValue=="Kingdom Of Saudi Arabia"){
+        //                     callback(false)
+        //                     $("#text-error").html("The selected data field "+notEmpty.message)
+        //                 }else{
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var iqamaIdValidation= function (value, callback) {
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //         var notEmpty=notEmptyfunction(value)
+        //         var validIdNum=validIdNumFunction(value,10,3)
+        //             if(notEmpty.validation==true){
+        //                 if(validIdNum.validation==true){
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }else{
+        //                     callback(false)
+        //                     $("#text-error").html("The selected data field "+validIdNum.message)
+        //                 }
+        //             }else{
+        //                 if(nationalityValue!="Kingdom Of Saudi Arabia"){
+        //                     callback(false)
+        //                     $("#text-error").html("The selected data field "+notEmpty.message)
+        //                 }else{
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var iqamaDateValidation= function (value, callback) {
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //         var notEmpty=notEmptyfunction(value)
+        //         const timestampFromValue=Date.parse(value);
+        //         var validateDate=validDatefunction(timestampFromValue)
+        //             if(notEmpty.validation==true){
+        //                 if(validateDate.validation==true){
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }else{
+        //                     callback(false)
+        //                     $("#text-error").html("<p>The selected data field "+validateDate.message+"</p>")
+        //                 }
+        //             }else{
+        //                 if(nationalityValue=="Kingdom Of Saudi Arabia"){
+        //                     callback(false)
+        //                     $("#text-error").html("The selected data field "+notEmpty.message)
+        //                 }else{
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var kIdValidation= function (value, callback) {
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //         var notEmpty=notEmptyfunction(value)
+        //         var validIdNum=validIdNumFunction(value,12,3)
+        //             if(notEmpty.validation==true){
+        //                 if(validIdNum.validation==true){
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }else{
+        //                     callback(false)
+        //                     $("#text-error").html("The selected data field "+validIdNum.message)
+        //                 }
+        //             }else{
+        //                 callback(false)
+        //                 $("#text-error").html("The selected data field "+notEmpty.message)
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var qIdValidation= function (value, callback) {
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //         var notEmpty=notEmptyfunction(value)
+        //         var validIdNum=validIdNumFunction(value,11,3)
+        //             if(notEmpty.validation==true){
+        //                 if(validIdNum.validation==true){
+        //                     callback(true)
+        //                     $("#text-error").html("")
+        //                 }else{
+        //                     callback(false)
+        //                     $("#text-error").html("The selected data field "+validIdNum.message)
+        //                 }
+        //             }else{
+        //                 callback(false)
+        //                 $("#text-error").html("The selected data field "+notEmpty.message)
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // var statusValidation= function(value, callback){
+        //     if(emptyRow){
+        //         callback(true)
+        //         $("#text-error").html("")
+        //     }else{
+        //         if(value){
+        //             if(value!="2= MARRIED" && relationValue=="2= SPOUSE"){
+        //                 callback(false)
+        //                 $("#text-error").html("Spouse can only be married")
+        //             }else if(value!="1= SINGLE" && relationValue=="3= CHILD"){
+        //                 callback(false)
+        //                 $("#text-error").html("Child can only be single")
+        //             }else{
+        //                 callback(true)
+        //                 $("#text-error").html("")
+        //             }
+        //         }else{
+        //             callback(false)
+        //             $("#text-error").html("This field is mandatory")
+        //         }
+        //     }
+        // }
+        // columnsValidations=[]
+        // HOTcols.forEach((entry,index) => {
+        //     switch(entry.data) {
+        //         case "Shop or Site or Department": entry['validator']=notEmpty; break;
+        //         case "Employee Staff ID": entry['validator']=employeeStaffId; break;
+        //         case "First Name": entry['validator']=namesValidation; break;
+        //         case "Second Name": entry['validator']=min2ifNotEmpty; break;
+        //         case "Family Name": entry['validator']=namesValidation; break;
+        //         case "DOB": entry['validator']=acceptableDate; break;
+        //         case "Nationality": entry['validator']=nationalities; break;
+        //         case "Marital Status": entry['validator']=statusValidation; break;
+        //         case "Position": entry['validator']=positionValidation; break;
+        //         case "Grade": entry['validator']=gradeValidation; break;
+        //         case "Mobile No": entry['validator']=phoneNumberValidation; break;
+        //         case "E-mail": entry['validator']=emailValidation; break;
+        //         case "NATIONAL ID": entry['validator']=nationalIdValidation; break;
+        //         case "EMIRATES ID NO.": entry['validator']=emiratesIdNumber; break;
+        //         case "PASSPORT NO.": entry['validator']=distinctNumbers; break;
+        //         case "UID": entry['validator']=uidValidation; break;
+        //         case "GDRFAFileNumber": entry['validator']=gdrfaFileNumber; break;
+        //         case "EMIRATE OF VISA ISSUANCE": entry['validator']=notEmpty; break;
+        //         case "MEMBER TYPE": entry['validator']=memberTypesValidation; break;
+        //         case "ENTITY TYPE": entry['validator']=entityTypesValidation; break;
+        //         case "ESTABLISHMENT ID#": entry['validator']=estIdValidation; break;
+        //         case "RESIDENTIAL LOCATION": entry['validator']=notEmpty; break;
+        //         case "WORK LOCATION": entry['validator']=notEmpty; break;
+        //         case "EMPLOYEES SALARY BRACKET": entry['validator']=notEmpty; break;
+        //         case "COMMISSION": entry['validator']=notEmpty; break;
+        //         case "ENTITY E-MAIL ID": entry['validator']=validEmailAndMandatory; break;
+        //     }
+        // })
+        // var hotSettings = {
+        //         colHeaders: HOTcols,
+        //         data: invalidContent,
+        //         columns: HOTcols,
+        //         minSpareRows: 0,
+        //         rowHeaders: true,
+        //         columnSorting: true,
+        //         manualRowMove: true,
+        //         width: "100%",
+        //         height: 300,
+        //         colWidths: 250,
+		//         autoRowSize: true,
+        //         stretchH: 'all',
+        //         manualColumnResize: true,
+        //         manualRowResize: true,
+        //         afterGetRowHeader: function(row, TH) {
+        //             TH.innerHTML = '<i class="align-middle fas fa-fw fa-times text-danger"></i>'
+        //         }
+        //     }
+        // setTimeout(function(){
+        //     var hot = new Handsontable(document.getElementById('datatables-hot'), hotSettings);
+        //     invalidContent.forEach((dataArray,row) => {
+        //         dataArray.forEach((dataValue,col) => {
+        //             hot.setDataAtCell(row,col, dataValue);
+        //         })
+        //     })
+        //     hot.addHook('beforeValidate', function(val, row, prop) {
+        //         emptyRow=hot.isEmptyRow(row)
+        //     });
+        
+        // hot.addHook('afterChange', function(change, source) {
+        //     var tableData = hot.getData();
+        //     var tableRow = tableData.length-1;
+        //     var currentRow=change[0][0]
+        //     hot.validateRows([currentRow], (valid) => {
+        //         if(valid==true){
+        //             var data = this.getDataAtRow(currentRow);
+        //             let addTdToTable="<tr><td><i class='align-middle fas fa-fw fa-check text-success'></i></td>"
+        //             data.forEach(function(cellData,cellIndex){
+        //                 addTdToTable+="<td>"+cellData+"</td>"
+        //             })
+        //             addTdToTable+="</tr>"
+        //             $("#validtbody").append(addTdToTable)
+        //             hot.alter('remove_row', currentRow, 1);
+        //         }
+        //     })
+
+        // })
+        //     if(invalidDetails){
+        //         console.log(invalidDetails)
+        //         invalidDetails.forEach((rowDetails,rowIndex) => {
+        //             Object.keys(rowDetails).forEach((key) => {
+        //                 let e=rowDetails[key]
+        //                 if(e.isValid=="false"){
+        //                     hot.setCellMeta(rowIndex,e.colIndex, 'valid', false);
+        //                 }
+        //             });
+        //         })
+        //     }
+        //     $("#step2Submit").fadeIn();
+        
+        //     Handsontable.dom.addEvent(document.getElementById('step2Submit'), 'click', async function() {
+        //         var tableData = hot.getData();
+        //         if(tableData.length!=0){
+        //             $('#confirmationDialog').modal()
+        //         }else{
+                    
+        //             var dataDB=table2array( "validtable" )
+        //             $('#confirmationDialog').modal('hide')
+        //             var addHealthTempId=0;
+        //             var dataArray={master_account:master_account,cor:cor,web_req_id:webReqId,dataValid:[],dataInvalid:[],dataCategories:[],dataValidCategories:[]};
+        //             cor = cor.toUpperCase()
+        //                 var d = new Date();
+        //                 var month = d.getMonth()+1;
+        //                 var day = d.getDate();
+
+        //                 var outputDate = d.getFullYear() + '/' +
+        //                     (month<10 ? '0' : '') + month + '/' +
+        //                     (day<10 ? '0' : '') + day;
+        //             dataDB.forEach(function(updatedData,rowIndex){
+        //                 var tableHeaderArray=dataDB[0].slice(Math.max(updatedData.length - policiesLength, 0))
+        //                 if(rowIndex!=0){
+        //                     addHealthTempId++;
+        //                     var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                     var curHeaderArray=[]
+        //                     tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                         var category=categoriesArray[index]
+        //                         curHeaderArray= {
+        //                             policy_id: headerCont,
+        //                             cat: category,
+        //                             Add_health_temp_id:addHealthTempId,
+        //                             web_req_id:webReqId,
+        //                             lob:lob,
+        //                             person_id: client_contact_id,
+        //                             last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")
+        //                         }
+        //                         dataArray.dataValidCategories.push(curHeaderArray)
+        //                     })
+        //                     switch (cor) {
+        //                         case 'DUBAI':
+        //                         case 'DUBAI LSB':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 emirates_id: updatedData[16],
+        //                                 passport_num: updatedData[17],
+        //                                 uid: updatedData[18],
+        //                                 gdrfa_file_number: updatedData[19],
+        //                                 emirate_of_visa_issuance: updatedData[20],
+        //                                 member_type: updatedData[21],
+        //                                 entity_type: updatedData[22],
+        //                                 establishment_id: updatedData[23],
+        //                                 residential_location: updatedData[24],
+        //                                 work_location: updatedData[25],
+        //                                 employees_salary_bracket: updatedData[26],
+        //                                 commission: updatedData[27],
+        //                                 entity_contact_number: updatedData[28],
+        //                                 entity_email_id: updatedData[29],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                                 created_at:outputDate
+        //                             })
+        //                         break;
+        //                         case 'AUH':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 emirates_id: updatedData[16],
+        //                                 passport_num: updatedData[17],
+        //                                 uid: updatedData[18],
+        //                                 previously_insured: updatedData[19],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                                 created_at:outputDate
+        //                             })
+        //                         break;
+        //                         case 'OTHER EMIRATES':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 emirates_id: updatedData[16],
+        //                                 passport_num: updatedData[17],
+        //                                 uid: updatedData[18],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                                 created_at:outputDate
+        //                             })
+        //                         break;
+        //                         case 'JORDAN':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 national_id: updatedData[16],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                                 created_at:outputDate
+        //                             })
+        //                         break;
+        //                         case 'KSA':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 saudi_id: updatedData[16],
+        //                                 iqama_id: updatedData[17],
+        //                                 iqama_expire_at: updatedData[18],
+        //                                 sponsor_id: updatedData[19],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                                 created_at:outputDate
+        //                             })
+        //                         break;
+        //                         case 'KUWAIT':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 kuwait_id : updatedData[16],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                                 created_at:outputDate
+        //                             })
+        //                         break;
+        //                         case 'QATAR':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 qatar_id: updatedData[16],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                                 created_at:outputDate
+        //                             })
+        //                         break;
+        //                         default:
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                                 created_at:outputDate
+        //                             })
+        //                     }
+        //                 }
+        //             })
+        //             $.ajax({
+        //                 url: "{{ route('addAMember3') }}",
+        //                 type: "post",
+        //                 data:  {data:dataArray},
+        //                 success: function (res) {
+        //                     $("#smartwizard-arrows-primary").smartWizard("next");
+        //                     $(".content-step-3").html(res)
+        //                 },
+        //                 error: function(xhr, status, error) {
+        //                     alert('Something went wrong')
+        //                     console.log(xhr.responseText);
+        //                 }
+        //             });
+        //         }
+        //     })
+        //     Handsontable.dom.addEvent(document.getElementById('confirmYes'), 'click', async function() {
+        //         var dataDB=table2array( "validtable" )
+        //         $('#confirmationDialog').modal('hide')
+        //             var addHealthTempId=0;
+        //             var tableData = hot.getData();
+        //             var tableHeader = hot.getColHeader();
+        //             var dataArray={master_account:master_account,cor:cor,web_req_id:webReqId,dataValid:[],dataInvalid:[],dataCategories:[],dataValidCategories:[]};
+                    
+        //             cor = cor.toUpperCase()
+
+
+        //             tableData.forEach(function(updatedData,rowIndex){
+        //                 addHealthTempId++;
+        //                 switch (cor) {
+        //                     case 'DUBAI':
+        //                     case 'DUBAI LSB':
+        //                         var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         var tableHeaderArray=tableHeader.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         dataArray.dataInvalid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             emirates_id: updatedData[16],
+        //                             passport_num: updatedData[17],
+        //                             uid: updatedData[18],
+        //                             gdrfa_file_number: updatedData[19],
+        //                             emirate_of_visa_issuance: updatedData[20],
+        //                             member_type: updatedData[21],
+        //                             entity_type: updatedData[22],
+        //                             establishment_id: updatedData[23],
+        //                             residential_location: updatedData[24],
+        //                             work_location: updatedData[25],
+        //                             employees_salary_bracket: updatedData[26],
+        //                             commission: updatedData[27],
+        //                             entity_contact_number: updatedData[28],
+        //                             entity_email_id: updatedData[29],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                         var curHeaderArray=[]
+        //                         tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                             var category=categoriesArray[index]
+        //                             curHeaderArray= {
+        //                                 policy_id: headerCont,
+        //                                 cat: category,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                             lob:lob,
+        //                                 person_id:client_contact_id,
+        //                                 last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")
+        //                             }
+        //                         })
+        //                         dataArray.dataCategories.push(curHeaderArray)
+        //                     break;
+        //                     case 'AUH':
+        //                         var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         var tableHeaderArray=tableHeader.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         dataArray.dataInvalid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             emirates_id: updatedData[16],
+        //                             passport_num: updatedData[17],
+        //                             uid: updatedData[18],
+        //                             previously_insured: updatedData[19],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                         var curHeaderArray=[]
+        //                         tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                             var category=categoriesArray[index]
+        //                             curHeaderArray= {
+        //                                 policy_id: headerCont,
+        //                                 cat: category,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                             lob:lob,
+        //                                 person_id:client_contact_id,
+        //                                 last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")}
+        //                         })
+        //                         dataArray.dataCategories.push(curHeaderArray)
+        //                     break;
+        //                     case 'OTHER EMIRATES':
+        //                         var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         var tableHeaderArray=tableHeader.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         dataArray.dataInvalid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             emirates_id: updatedData[16],
+        //                             passport_num: updatedData[17],
+        //                             uid: updatedData[18],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                         var curHeaderArray=[]
+        //                         tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                             var category=categoriesArray[index]
+        //                             curHeaderArray= {
+        //                                 policy_id: headerCont,
+        //                                 cat: category,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                             lob:lob,
+        //                                 person_id:client_contact_id,
+        //                                 last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")}
+        //                         })
+        //                         dataArray.dataCategories.push(curHeaderArray)
+        //                     break;
+        //                     case 'JORDAN':
+        //                         var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         var tableHeaderArray=tableHeader.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         dataArray.dataInvalid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             national_id: updatedData[16],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+                                
+        //                         var curHeaderArray=[]
+        //                         tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                             var category=categoriesArray[index]
+        //                             curHeaderArray= {
+        //                                 policy_id: headerCont,
+        //                                 cat: category,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                             lob:lob,
+        //                                 person_id:client_contact_id,
+        //                                 last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")}
+        //                         })
+        //                         dataArray.dataCategories.push(curHeaderArray)
+        //                     break;
+        //                     case 'KSA':
+        //                         var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         var tableHeaderArray=tableHeader.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         dataArray.dataInvalid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             saudi_id: updatedData[16],
+        //                             iqama_id: updatedData[17],
+        //                             iqama_expire_at: updatedData[18],
+        //                             sponsor_id: updatedData[19],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                         var curHeaderArray=[]
+        //                         tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                             var category=categoriesArray[index]
+        //                             curHeaderArray= {
+        //                                 policy_id: headerCont,
+        //                                 cat: category,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                             lob:lob,
+        //                                 person_id:client_contact_id,
+        //                                 last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")}
+        //                         })
+        //                         dataArray.dataCategories.push(curHeaderArray)
+        //                     break;
+        //                     case 'KUWAIT':
+        //                         var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         var tableHeaderArray=tableHeader.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         dataArray.dataInvalid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             kuwait_id : updatedData[16],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                         var curHeaderArray=[]
+        //                         tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                             var category=categoriesArray[index]
+        //                             curHeaderArray= {
+        //                                 policy_id: headerCont,
+        //                                 cat: category,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                             lob:lob,
+        //                                 person_id:client_contact_id,
+        //                                 last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")}
+        //                         })
+        //                         dataArray.dataCategories.push(curHeaderArray)
+        //                     break;
+        //                     case 'QATAR':
+        //                         var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         var tableHeaderArray=tableHeader.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         dataArray.dataInvalid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             qatar_id: updatedData[16],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                         var curHeaderArray=[]
+        //                         tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                             var category=categoriesArray[index]
+        //                             curHeaderArray= {
+        //                                 policy_id: headerCont,
+        //                                 cat: category,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                             lob:lob,
+        //                                 person_id:client_contact_id,
+        //                                 last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")}
+        //                         })
+        //                         dataArray.dataCategories.push(curHeaderArray)
+        //                     break;
+        //                     default:
+        //                         var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         var tableHeaderArray=tableHeader.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                         dataArray.dataInvalid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                         var curHeaderArray=[]
+        //                         tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                             var category=categoriesArray[index]
+        //                             curHeaderArray= {
+        //                                 policy_id: headerCont,
+        //                                 cat: category,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId,
+        //                             lob:lob,
+        //                                 person_id:client_contact_id,
+        //                                 last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")}
+        //                         })
+        //                         dataArray.dataCategories.push(curHeaderArray)
+        //                 }
+        //             })
+                    
+                    
+        //             dataDB.forEach(function(updatedData,rowIndex){
+        //                 var tableHeaderArray=dataDB[0].slice(Math.max(updatedData.length - policiesLength, 0))
+        //                 if(rowIndex!=0){
+        //                     addHealthTempId++;
+        //                     var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                     var curHeaderArray=[]
+        //                     tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                         var category=categoriesArray[index]
+        //                         curHeaderArray= {
+        //                             policy_id: headerCont,
+        //                             cat: category,
+        //                             Add_health_temp_id:addHealthTempId,
+        //                             web_req_id:webReqId,
+        //                             lob:lob,
+        //                             person_id:client_contact_id,
+        //                             last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")}
+        //                         dataArray.dataValidCategories.push(curHeaderArray)
+        //                     })
+        //                     switch (cor) {
+        //                         case 'DUBAI':
+        //                         case 'DUBAI LSB':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 emirates_id: updatedData[16],
+        //                                 passport_num: updatedData[17],
+        //                                 uid: updatedData[18],
+        //                                 gdrfa_file_number: updatedData[19],
+        //                                 emirate_of_visa_issuance: updatedData[20],
+        //                                 member_type: updatedData[21],
+        //                                 entity_type: updatedData[22],
+        //                                 establishment_id: updatedData[23],
+        //                                 residential_location: updatedData[24],
+        //                                 work_location: updatedData[25],
+        //                                 employees_salary_bracket: updatedData[26],
+        //                                 commission: updatedData[27],
+        //                                 entity_contact_number: updatedData[28],
+        //                                 entity_email_id: updatedData[29],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId
+        //                             })
+        //                         break;
+        //                         case 'AUH':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 emirates_id: updatedData[16],
+        //                                 passport_num: updatedData[17],
+        //                                 uid: updatedData[18],
+        //                                 previously_insured: updatedData[19],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId
+        //                             })
+        //                         break;
+        //                         case 'OTHER EMIRATES':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 emirates_id: updatedData[16],
+        //                                 passport_num: updatedData[17],
+        //                                 uid: updatedData[18],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                             Add_health_temp_id:addHealthTempId
+        //                             })
+        //                         break;
+        //                         case 'JORDAN':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 national_id: updatedData[16],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId
+        //                             })
+        //                         break;
+        //                         case 'KSA':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 saudi_id: updatedData[16],
+        //                                 iqama_id: updatedData[17],
+        //                                 iqama_expire_at: updatedData[18],
+        //                                 sponsor_id: updatedData[19],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId
+        //                             })
+        //                         break;
+        //                         case 'KUWAIT':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 kuwait_id : updatedData[16],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId
+        //                             })
+        //                         break;
+        //                         case 'QATAR':
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 qatar_id: updatedData[16],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId
+        //                             })
+        //                         break;
+        //                         default:
+        //                             dataArray.dataValid.push({
+        //                                 company_name: updatedData[0],
+        //                                 s_department: updatedData[1],
+        //                                 employee_staff_id: updatedData[2],
+        //                                 first_name: updatedData[3],
+        //                                 second_name: updatedData[4],
+        //                                 last_name: updatedData[5],
+        //                                 relation: updatedData[6],
+        //                                 dob: updatedData[7],
+        //                                 gender: updatedData[8],
+        //                                 nationality: updatedData[9],
+        //                                 marital_status: updatedData[10],
+        //                                 cost_sharing: updatedData[11],
+        //                                 position: updatedData[12],
+        //                                 grade: updatedData[13],
+        //                                 mobile: updatedData[14],
+        //                                 email: updatedData[15],
+        //                                 client_contact_name: contact.client_contact_name,
+        //                                 client_contact_id: client_contact_id,
+        //                                 master_account: master_account,
+        //                                 cor:cor,
+        //                                 web_req_id:webReqId,
+        //                                 Add_health_temp_id:addHealthTempId
+        //                             })
+        //                     }
+        //                 }
+        //             })
+        //             $.ajax({
+        //                 url: "{{ route('addAMember3') }}",
+        //                 type: "post",
+        //                 data:  {data:dataArray},
+        //                 success: function (res) {
+        //                     if(res==="goToMyRequest"){
+        //                         $(location).attr('href', "{{ route('myAdditionRequests') }}");
+        //                     }else{
+        //                         $("#smartwizard-arrows-primary").smartWizard("next");
+        //                         $(".content-step-3").html(res)
+        //                     }
+        //                 },
+        //                 error: function(xhr, status, error) {
+        //                     alert('Something went wrong')
+        //                     console.log(xhr.responseText);
+        //                 }
+        //             });
+        //     })
+        // }, 1000);
+        // $("#confirmNo").click(function(){
+        //     var dataDB=table2array( "validtable" )
+        //     if(dataDB.length>1){
+        //         var addHealthTempId=0;
+        //         var dataArray={master_account:master_account,cor:cor,web_req_id:webReqId,dataValid:[],dataInvalid:[],dataCategories:[],dataValidCategories:[]};
+                
+        //         cor = cor.toUpperCase()
+        //         dataDB.forEach(function(updatedData,rowIndex){
+        //             var tableHeaderArray=dataDB[0].slice(Math.max(updatedData.length - policiesLength, 0))
+        //             if(rowIndex!=0){
+        //                 addHealthTempId++;
+        //                 var categoriesArray=updatedData.slice(Math.max(updatedData.length - policiesLength, 0))
+        //                 var curHeaderArray=[]
+        //                 tableHeaderArray.forEach(function(headerCont,index){
+        //                         let lob=""
+        //                         policiesDB.forEach((e) =>{
+        //                             if(headerCont===e.master_policy_clover_id){
+        //                                 lob=e.lob
+        //                             }
+        //                         })
+        //                     var category=categoriesArray[index]
+        //                     curHeaderArray= {
+        //                         policy_id: headerCont,
+        //                         cat: category,
+        //                         web_req_id:webReqId,
+        //                         Add_health_temp_id:addHealthTempId,
+        //                             lob:lob,
+        //                         person_id:client_contact_id,
+        //                         last_status_updated: moment(new Date()).format("MM-DD-YYYY HH:mm:ss")}
+        //                 })
+        //                 dataArray.dataValidCategories.push(curHeaderArray)
+        //                 switch (cor) {
+        //                     case 'DUBAI':
+        //                     case 'DUBAI LSB':
+        //                         dataArray.dataValid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             emirates_id: updatedData[16],
+        //                             passport_num: updatedData[17],
+        //                             uid: updatedData[18],
+        //                             gdrfa_file_number: updatedData[19],
+        //                             emirate_of_visa_issuance: updatedData[20],
+        //                             member_type: updatedData[21],
+        //                             entity_type: updatedData[22],
+        //                             establishment_id: updatedData[23],
+        //                             residential_location: updatedData[24],
+        //                             work_location: updatedData[25],
+        //                             employees_salary_bracket: updatedData[26],
+        //                             commission: updatedData[27],
+        //                             entity_contact_number: updatedData[28],
+        //                             entity_email_id: updatedData[29],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                     break;
+        //                     case 'AUH':
+        //                         dataArray.dataValid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             emirates_id: updatedData[16],
+        //                             passport_num: updatedData[17],
+        //                             uid: updatedData[18],
+        //                             previously_insured: updatedData[19],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                     break;
+        //                     case 'OTHER EMIRATES':
+        //                         dataArray.dataValid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             emirates_id: updatedData[16],
+        //                             passport_num: updatedData[17],
+        //                             uid: updatedData[18],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                     break;
+        //                     case 'JORDAN':
+        //                         dataArray.dataValid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             national_id: updatedData[16],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                     break;
+        //                     case 'KSA':
+        //                         dataArray.dataValid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             saudi_id: updatedData[16],
+        //                             iqama_id: updatedData[17],
+        //                             iqama_expire_at: updatedData[18],
+        //                             sponsor_id: updatedData[19],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                     break;
+        //                     case 'KUWAIT':
+        //                         dataArray.dataValid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             kuwait_id : updatedData[16],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                     break;
+        //                     case 'QATAR':
+        //                         dataArray.dataValid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             qatar_id: updatedData[16],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                     break;
+        //                     default:
+        //                         dataArray.dataInvalid.push({
+        //                             company_name: updatedData[0],
+        //                             s_department: updatedData[1],
+        //                             employee_staff_id: updatedData[2],
+        //                             first_name: updatedData[3],
+        //                             second_name: updatedData[4],
+        //                             last_name: updatedData[5],
+        //                             relation: updatedData[6],
+        //                             dob: updatedData[7],
+        //                             gender: updatedData[8],
+        //                             nationality: updatedData[9],
+        //                             marital_status: updatedData[10],
+        //                             cost_sharing: updatedData[11],
+        //                             position: updatedData[12],
+        //                             grade: updatedData[13],
+        //                             mobile: updatedData[14],
+        //                             email: updatedData[15],
+        //                             client_contact_name: contact.client_contact_name,
+        //                             client_contact_id: client_contact_id,
+        //                             master_account: master_account,
+        //                             cor:cor,
+        //                             web_req_id:webReqId,
+        //                             Add_health_temp_id:addHealthTempId
+        //                         })
+        //                 }
+        //             }
+        //         })
+        //         $.ajax({
+        //             url: "{{ route('addAMember3') }}",
+        //             type: "post",
+        //             data:  {data:dataArray},
+        //             success: function (res) {
+        //                 $("#smartwizard-arrows-primary").smartWizard("next");
+        //                 $(".content-step-3").html(res)
+        //             },
+        //             error: function(xhr, status, error) {
+        //                 alert('Something went wrong')
+        //                 console.log(xhr.responseText);
+        //             }
+        //         });
+        //     }
+        //     $('#confirmationDialog').modal('hide')
+        // })
+
+    })
+    // function table2array( jTable ) {
+    //     tableArr = new Array();
+    //     var ix = 0;
+    //     $("#"+jTable).find('tr').each(function(rowIndex){
+    //         tableArr[ix] = new Array();
+    //         $(this).find('th, td').each(function(index){
+    //             if(index!=0){
+    //                 tableArr[ix].push($(this).text().trim());
+    //             }
+    //         });     
+    //         ix++;
+    //     });     
+    //     return tableArr;
+    // };
+</script>

@@ -591,6 +591,8 @@
             relationValue=hot.getDataAtCell(row,6)
         });
         Handsontable.dom.addEvent(document.getElementById('step1Submit'), 'click', async function() {
+            //.step1Modal .spinner-border .modal-content
+            //$(".modal-footer").html("<div class='spinner-border text-primary' role='status'><span class='sr-only'>Loading...</span></div>")
             var newArray = [];
             var oldRow=0
             allDataArray.length=0
@@ -598,7 +600,7 @@
             let invalidEntries=[]
             let validRowsIndexes=[]
             
-            
+            //if(validLimits==""){
             hot.validateCells(function(hotIsValid) {
                 allDataArray.forEach(item => {
                     var newItem = [];
@@ -626,9 +628,11 @@
                 $(".step1Modal .modal-footer").removeClass("d-none")
             })
             $('#proceedConfirmation').modal()
+            // }else{
+            //     alert(validLimits)
+            // }
         })
         Handsontable.dom.addEvent(document.getElementById('proceedToStep2'), 'click', async function() {
-                let allFilledRows = []
                 $('#proceedConfirmation').modal('hide')
             var newArray = [];
             var oldRow=0
@@ -650,27 +654,17 @@
                         oldRow=item.row
                     }
                 });
-                allFilledRowsWithDetails = newArray.slice(6).reverse().map(e=>e.reverse())
-                allFilledRows=allFilledRowsWithDetails.map(e=>{
-                    let rows=[]
-                    e.forEach(eSub=>{
-                        rows.push({
-                            [eSub.prop]:eSub.value,
-                            valid:eSub.isValid
-                        })
-                    })
-                    return rows
-                })
-                // allFilledRows.forEach((filledRow,index) => {
-                //     var p=filledRow.map((valid) =>  valid.isValid).indexOf(false);
-                //     if(p<0){
+                let allFilledRows = newArray.slice(6).reverse()
+                allFilledRows.forEach((filledRow,index) => {
+                    var p=filledRow.map((valid) =>  valid.isValid).indexOf(false);
+                    if(p<0){
                         
-                //         validEntries.push(filledRow)
-                //         validRowsIndexes.push(index)
-                //     }else{
-                //         invalidEntries.push(filledRow)
-                //     }
-                // })
+                        validEntries.push(filledRow)
+                        validRowsIndexes.push(index)
+                    }else{
+                        invalidEntries.push(filledRow)
+                    }
+                })
             })
             setTimeout(function(){
                 var tableData = hot.getData();
@@ -772,11 +766,10 @@
                         }
                     })
                 const HOTcols=JSON.stringify(columnsFromCOR)
-                console.log("dataArray",allFilledRows)
                 $.ajax({
                     url: "{{ route('addAMember2') }}",
                     type: "post",
-                    data:  {data:allFilledRows},
+                    data:  {data:{dataArray,HOTcols}},
                     success: function (res) {
                         $("#smartwizard-arrows-primary").smartWizard("next");
                         $(".content-step-2").html(res)
